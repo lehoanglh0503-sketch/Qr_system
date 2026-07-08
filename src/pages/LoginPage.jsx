@@ -165,16 +165,10 @@ export default function LoginPage() {
               ) : 'ĐĂNG NHẬP'}
             </button>
 
-            <div style={{ textAlign: 'center' }}>
-              <a href="#" style={{ color: '#64748b', fontSize: '13px', textDecoration: 'none' }}>
-                Forgot Username / Password?
-              </a>
-            </div>
+
           </form>
 
-          <div style={{ position: 'absolute', bottom: '30px', right: '40px', fontSize: '14px', color: '#64748b' }}>
-            <Link to="#" style={{ color: '#64748b', textDecoration: 'none' }}>Create new your Shop &rarr;</Link>
-          </div>
+
         </div>
       </div>
     </div>
