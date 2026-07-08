@@ -11,13 +11,17 @@ const { authMiddleware, JWT_SECRET } = require('../middleware/auth');
 
 // Login
 router.post('/login', async (req, res) => {
-  const { phone, password, role } = req.body;
+  const { name, password, role } = req.body;
+  
+  if (!name || !password) {
+    return res.status(400).json({ message: 'Tên nhân viên và mật khẩu không được để trống' });
+  }
   
   try {
-    const snapshot = await db.collection('users').where('phone', '==', phone).get();
+    const snapshot = await db.collection('users').where('name', '==', name).get();
     
     if (snapshot.empty) {
-      return res.status(400).json({ message: 'Số điện thoại hoặc mật khẩu không đúng' });
+      return res.status(400).json({ message: 'Tên nhân viên hoặc mật khẩu không đúng' });
     }
 
     const userDoc = snapshot.docs[0];
@@ -26,7 +30,7 @@ router.post('/login', async (req, res) => {
     // Verify password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(400).json({ message: 'Số điện thoại hoặc mật khẩu không đúng' });
+      return res.status(400).json({ message: 'Tên nhân viên hoặc mật khẩu không đúng' });
     }
 
     const payload = {

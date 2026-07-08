@@ -156,8 +156,8 @@ export default function AdminAccount() {
                   <input type="text" value={profile.name} onChange={e => setProfile({...profile, name: e.target.value})} className="form-input" />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: '#475569', marginBottom: '8px' }}>Số điện thoại (Tài khoản)</label>
-                  <input type="tel" value={profile.phone} className="form-input" style={{ background: '#f8fafc', color: '#64748b' }} readOnly title="Không thể đổi số điện thoại" />
+                  <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: '#475569', marginBottom: '8px' }}>Số điện thoại</label>
+                  <input type="text" value={profile.phone} className="form-input" style={{ background: '#f8fafc', color: '#64748b' }} readOnly title="Không thể đổi số điện thoại" />
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '12px' }}>
                   <button type="submit" disabled={savingProfile} style={{
@@ -264,7 +264,7 @@ export default function AdminAccount() {
                   <input type="text" value={newUser.name} onChange={e => setNewUser({...newUser, name: e.target.value})} className="form-input" placeholder="Nguyễn Văn A" required />
                 </div>
                 <div>
-                  <label className="form-label">Số điện thoại (Tên đăng nhập)</label>
+                  <label className="form-label">Số điện thoại</label>
                   <input type="tel" value={newUser.phone} onChange={e => setNewUser({...newUser, phone: e.target.value})} className="form-input" placeholder="090..." required />
                 </div>
                 <div>

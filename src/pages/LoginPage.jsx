@@ -4,8 +4,8 @@ import { useAuth } from '../App'
 import api from '../api'
 
 export default function LoginPage() {
-  const [phone, setPhone] = useState('0853272393')
-  const [password, setPassword] = useState('12345678')
+  const [name, setName] = useState('')
+  const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -15,17 +15,21 @@ export default function LoginPage() {
 
   async function handleSubmit(e) {
     e.preventDefault()
+    if (!name || !password) {
+      setError('Vui lòng nhập đầy đủ thông tin')
+      return
+    }
     setLoading(true)
     setError('')
     try {
-      const data = await api.login(phone, password)
+      const data = await api.login(name, password)
       localStorage.setItem('token', data.token)
       login(data.user)
       if (data.user.role === 'Admin') navigate('/admin/company')
       else if (data.user.role === 'Bếp' || data.user.role === 'Kitchen') navigate('/admin/kitchen')
       else navigate('/admin/orders')
     } catch (err) {
-      setError(err.message || 'Số điện thoại hoặc mật khẩu không đúng')
+      setError(err.message || 'Tên hoặc mật khẩu không đúng')
     } finally {
       setLoading(false)
     }
@@ -116,15 +120,16 @@ export default function LoginPage() {
             )}
 
             <div className="mb-4 relative">
-              <label htmlFor="phone" className="sr-only">Số điện thoại</label>
-              <span className="absolute left-4 top-[14px] text-lg text-slate-500">📞</span>
+              <label htmlFor="name" className="sr-only">Tên nhân viên</label>
+              <span className="absolute left-4 top-[14px] text-lg text-slate-500">👤</span>
               <input 
-                id="phone"
-                type="tel"
-                value={phone}
-                onChange={e => setPhone(e.target.value)}
-                placeholder="Số điện thoại"
+                id="name"
+                type="text"
+                value={name}
+                onChange={e => setName(e.target.value)}
+                placeholder="Tên nhân viên"
                 className="w-full py-3.5 px-4 pl-[45px] bg-slate-100 border border-transparent rounded-sm text-[15px] text-slate-600 focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] focus:bg-white transition-all outline-none"
+                autoComplete="username"
               />
             </div>
 

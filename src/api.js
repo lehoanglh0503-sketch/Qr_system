@@ -29,7 +29,7 @@ export async function fetchApi(endpoint, options = {}) {
 
 export default {
   // Auth
-  login: (phone, password, role) => fetchApi('/auth/login', { method: 'POST', body: JSON.stringify({ phone, password, role }) }),
+  login: (name, password, role) => fetchApi('/auth/login', { method: 'POST', body: JSON.stringify({ name, password, role }) }),
   getProfile: () => fetchApi('/auth/profile'),
   
   // Categories
