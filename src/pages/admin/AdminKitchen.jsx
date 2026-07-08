@@ -46,20 +46,19 @@ export default function AdminKitchen() {
     }
   }
 
-  // Flatten items for kitchen view
-  let kitchenItems = []
+  // Group by order for kitchen view
+  let kitchenOrders = []
   orders.forEach(order => {
     if (order.status !== 'completed' && order.items) {
-      order.items.forEach((item, index) => {
-        if (item.status === 'pending' || item.status === 'cooking') {
-          kitchenItems.push({
-            orderId: order.id,
-            tableName: order.tableName,
-            itemIndex: index,
-            ...item
-          })
-        }
-      })
+      const itemsToCook = order.items.map((item, index) => ({ ...item, originalIndex: index })).filter(item => item.status === 'pending' || item.status === 'cooking');
+      if (itemsToCook.length > 0) {
+        kitchenOrders.push({
+          orderId: order.id,
+          tableName: order.tableName,
+          items: itemsToCook,
+          orderStatus: order.status
+        })
+      }
     }
   })
 
@@ -75,76 +74,87 @@ export default function AdminKitchen() {
           </p>
         </div>
 
-        {loading && kitchenItems.length === 0 ? (
+        {loading && kitchenOrders.length === 0 ? (
           <div style={{ textAlign: 'center', padding: 40, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
             <svg className="animate-spin h-8 w-8 text-[#D4AF37]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
-            <span style={{ color: '#6b7280', fontSize: '15px' }}>Đang tải danh sách món...</span>
+            <span style={{ color: '#6b7280', fontSize: '15px' }}>Đang tải danh sách đơn...</span>
           </div>
-        ) : kitchenItems.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: 40, background: 'white', borderRadius: 16 }}>Bếp đang rảnh rỗi, không có món nào chờ nấu.</div>
+        ) : kitchenOrders.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: 40, background: 'white', borderRadius: 16 }}>Bếp đang rảnh rỗi, không có đơn nào chờ nấu.</div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
-            {kitchenItems.map((kItem, idx) => (
-              <div key={idx} style={{
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px' }}>
+            {kitchenOrders.map((kOrder) => {
+              const hasCooking = kOrder.items.some(i => i.status === 'cooking');
+              return (
+              <div key={kOrder.orderId} style={{
                 background: 'white',
                 padding: '24px',
                 borderRadius: '12px',
-                border: kItem.status === 'cooking' ? '2px solid #D4AF37' : '1px solid #e5e7eb',
+                border: hasCooking ? '2px solid #D4AF37' : '1px solid #e5e7eb',
                 boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '16px'
               }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px dashed #e5e7eb', paddingBottom: '12px' }}>
                   <h3 style={{ margin: 0, fontSize: '20px', fontWeight: '800', color: '#111827' }}>
-                    {kItem.tableName}
+                    {kOrder.tableName}
                   </h3>
                   <span style={{
                     padding: '4px 10px',
                     borderRadius: '20px',
                     fontSize: '12px',
                     fontWeight: 'bold',
-                    background: kItem.status === 'cooking' ? '#fef08a' : '#fee2e2',
-                    color: kItem.status === 'cooking' ? '#854d0e' : '#991b1b'
+                    background: hasCooking ? '#fef08a' : '#fee2e2',
+                    color: hasCooking ? '#854d0e' : '#991b1b'
                   }}>
-                    {kItem.status === 'cooking' ? 'Đang Nấu' : 'Chờ Nấu'}
+                    {hasCooking ? 'Đang Nấu' : 'Chờ Nấu'}
                   </span>
                 </div>
                 
-                <div>
-                  <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#1f2937' }}>
-                    {kItem.quantity} x {kItem.name}
-                  </div>
-                  {kItem.note && (
-                    <div style={{ fontSize: '14px', color: '#b91c1c', marginTop: '8px', padding: '8px', background: '#fef2f2', borderRadius: '6px' }}>
-                      <strong>Ghi chú:</strong> {kItem.note}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {kOrder.items.map(item => (
+                    <div key={item.originalIndex} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #f3f4f6', paddingBottom: '12px' }}>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#1f2937' }}>
+                          <span style={{ color: '#D4AF37', marginRight: '8px' }}>{item.quantity}x</span> 
+                          {item.name}
+                        </div>
+                        {item.note && (
+                          <div style={{ fontSize: '13px', color: '#b91c1c', marginTop: '4px' }}>
+                            * {item.note}
+                          </div>
+                        )}
+                      </div>
+                      
+                      <div style={{ marginLeft: '16px', display: 'flex', gap: '8px' }}>
+                        {item.status === 'pending' && (
+                          <button 
+                            onClick={() => handleItemStatusChange(kOrder.orderId, item.originalIndex, 'cooking')}
+                            className="flex items-center gap-2 px-4 py-2 bg-transparent border border-[#D4AF37] text-[#D4AF37] text-[13px] font-bold rounded-full hover:bg-[#D4AF37] hover:text-[#050A1F] transition-all duration-300 shadow-sm hover:shadow-md transform hover:-translate-y-0.5"
+                          >
+                            <span>🍳</span>
+                            <span>BẮT ĐẦU NẤU</span>
+                          </button>
+                        )}
+                        {item.status === 'cooking' && (
+                          <button 
+                            onClick={() => handleItemStatusChange(kOrder.orderId, item.originalIndex, 'ready')}
+                            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-[13px] font-bold rounded-full hover:from-emerald-600 hover:to-teal-600 transition-all duration-300 shadow-sm hover:shadow-md transform hover:-translate-y-0.5"
+                          >
+                            <span>✅</span>
+                            <span>ĐÃ NẤU XONG</span>
+                          </button>
+                        )}
+                      </div>
                     </div>
-                  )}
-                </div>
-
-                <div style={{ marginTop: 'auto', paddingTop: '16px', display: 'flex', gap: '10px' }}>
-                  {kItem.status === 'pending' && (
-                    <button 
-                      onClick={() => handleItemStatusChange(kItem.orderId, kItem.itemIndex, 'cooking')}
-                      className="w-full py-2.5 bg-[#050A1F] text-white font-semibold rounded-lg hover:bg-gray-800 transition-colors"
-                    >
-                      🍳 Bắt đầu nấu
-                    </button>
-                  )}
-                  {kItem.status === 'cooking' && (
-                    <button 
-                      onClick={() => handleItemStatusChange(kItem.orderId, kItem.itemIndex, 'ready')}
-                      className="w-full py-2.5 bg-[#10b981] text-white font-semibold rounded-lg hover:bg-emerald-600 transition-colors"
-                    >
-                      ✅ Đã nấu xong
-                    </button>
-                  )}
+                  ))}
                 </div>
               </div>
-            ))}
+            )})}
           </div>
         )}
       </div>

@@ -64,10 +64,10 @@ export default function AdminLayout({ children, title, actions, showHeader = tru
       <aside className="w-[260px] bg-[#050A1F] border-r border-[#050A1F] flex flex-col shadow-[4px_0_24px_rgba(0,0,0,0.05)] z-20">
         {/* Logo */}
         <div className="pt-10 pb-8 px-6 flex flex-col items-center">
-          <div className="font-serif text-[26px] font-bold text-[#D4AF37] tracking-widest uppercase text-center leading-tight">
-            VIỆT NHẬT
+          <div className="font-serif text-[26px] font-bold tracking-widest uppercase text-center leading-tight" style={{ color: '#D4AF37' }}>
+            {company?.name || 'VIỆT NHẬT'}
           </div>
-          <div className="text-[12px] font-medium text-[#64748B] tracking-widest mt-1 uppercase">
+          <div className="text-[12px] font-medium tracking-widest mt-1 uppercase text-center" style={{ color: '#64748B' }}>
             Fine Dining Excellence
           </div>
         </div>
@@ -107,14 +107,7 @@ export default function AdminLayout({ children, title, actions, showHeader = tru
 
         {/* Bottom Actions */}
         <div className="p-6 border-t border-[#101835] bg-[#050A1F] space-y-4">
-          <button className="w-full py-3 px-4 rounded-md bg-[#D4AF37] text-[#050A1F] font-bold text-[14px] shadow-sm hover:bg-[#E6C087] transition-all">
-            Reservations
-          </button>
-          
           <div className="pt-4 space-y-2">
-            <button className="w-full flex items-center px-2 py-2 bg-transparent text-[#64748B] hover:text-[#E6C087] transition-all font-medium text-[14px] group">
-              <span className="text-[18px] mr-3">⚙️</span> Settings
-            </button>
             <button onClick={handleLogout} className="w-full flex items-center px-2 py-2 bg-transparent text-[#64748B] hover:text-[#E6C087] transition-all font-medium text-[14px] group">
               <span className="text-[18px] mr-3 group-hover:translate-x-1 transition-transform">↪️</span> Logout
             </button>

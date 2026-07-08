@@ -81,7 +81,7 @@ export default function LoginPage() {
             border: '1px solid rgba(212, 175, 55, 0.2)'
           }}>
             <div className="text-center">
-              <div className="font-serif text-[42px] font-bold text-[#D4AF37] tracking-widest uppercase mb-2">
+              <div className="font-serif text-[42px] font-bold tracking-widest uppercase mb-2" style={{ color: '#D4AF37' }}>
                 VIỆT NHẬT
               </div>
               <div className="text-[#E6C087] font-medium tracking-[0.2em] text-[12px] uppercase">

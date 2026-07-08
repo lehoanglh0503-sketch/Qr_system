@@ -14,8 +14,8 @@ token = token_input['value'] if token_input else ''
 # Perform login
 login_data = {
     '__RequestVerificationToken': token,
-    'PhoneNumber': '0853272393',
-    'Password': '12345678'
+    'PhoneNumber': 'YOUR_PHONE_NUMBER',
+    'Password': 'YOUR_PASSWORD'
 }
 
 response = session.post(login_url, data=login_data)

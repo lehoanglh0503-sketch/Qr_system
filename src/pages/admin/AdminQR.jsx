@@ -214,9 +214,9 @@ export default function AdminQR() {
                 const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encodeURIComponent(link)}`
                 
                 return (
-                  <div key={item.id} className="bg-[#FAFAF9] rounded-sm border border-[#E2E8F0] p-6 flex flex-col items-center hover:shadow-[0_10px_40px_-10px_rgba(0,0,0,0.08)] transition-all duration-300">
-                    <div className="text-[12px] text-[#A16207] font-bold uppercase tracking-widest mb-4">TABLE</div>
-                    <div className="font-serif text-[24px] font-bold text-[#0F172A] mb-6">{item.name}</div>
+                  <div key={item.id} className="h-full bg-[#FAFAF9] rounded-sm border border-[#E2E8F0] p-6 flex flex-col items-center hover:shadow-[0_10px_40px_-10px_rgba(0,0,0,0.08)] transition-all duration-300">
+                    <div className="text-[12px] text-[#A16207] font-bold uppercase tracking-widest mb-4 text-center">TABLE</div>
+                    <div className="font-serif text-[24px] font-bold text-[#0F172A] mb-6 text-center">{item.name}</div>
                     
                     <div className="bg-white p-3 shadow-sm border border-[#E2E8F0] mb-4 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => window.open(link, '_blank')}>
                       <img src={qrUrl} alt={`QR Code ${item.name}`} className="w-32 h-32 object-contain" />
@@ -226,7 +226,7 @@ export default function AdminQR() {
                       {link}
                     </a>
                     
-                    <button onClick={() => handleDownload(qrUrl, item.name)} className="w-full py-3 bg-transparent border border-[#050A1F] text-[#050A1F] text-[13px] font-bold tracking-widest uppercase hover:bg-[#050A1F] hover:text-[#D4AF37] transition-all rounded-sm flex justify-center items-center gap-2">
+                    <button onClick={() => handleDownload(qrUrl, item.name)} className="w-full mt-auto py-3 bg-transparent border border-[#050A1F] text-[#050A1F] text-[13px] font-bold tracking-widest uppercase hover:bg-[#050A1F] hover:text-[#D4AF37] transition-all rounded-sm flex justify-center items-center gap-2">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                       DOWNLOAD
                     </button>
