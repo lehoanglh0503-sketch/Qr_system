@@ -56,5 +56,10 @@ Dự án này là một ứng dụng gọi món ăn tại bàn thông qua mã QR
 - **Dành cho Khách hàng**: Quét mã QR tại bàn, xem thực đơn (các món nổi bật, phân loại), thêm vào giỏ hàng, tùy chỉnh số lượng, ghi chú, đặt món, gọi nhân viên, và yêu cầu tính tiền. Trải nghiệm mượt mà được tối ưu 100% trên thiết bị di động (Mobile-first).
 - **Dành cho Admin/Nhân viên**: Quản lý danh mục, món ăn, quản lý mã QR bàn, nhận đơn hàng theo thời gian thực (Realtime) và theo dõi trạng thái món ăn.
 
+## 🔐 Tài khoản Truy cập Mặc định
+Sau khi khởi chạy thành công cả Backend và Frontend, bạn có thể truy cập vào trang Quản trị (Admin) bằng tài khoản mặc định sau:
+- **Tên nhân viên**: `Admin`
+- **Mật khẩu**: `123456`
+
 ---
 **⚠️ Lưu ý Bảo mật:** File `serviceAccountKey.json` chứa thông tin nhạy cảm để truy cập Database. Đảm bảo file này **luôn luôn** nằm trong `.gitignore` và tuyệt đối không bao giờ được commit/push lên GitHub.
