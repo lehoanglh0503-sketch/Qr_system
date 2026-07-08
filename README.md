@@ -28,11 +28,8 @@ Dự án này là một ứng dụng gọi món ăn tại bàn thông qua mã QR
    ```bash
    npm install
    ```
-3. Cấu hình Firebase Admin SDK:
-   - Truy cập Firebase Console -> Chọn Project của bạn.
-   - Đi tới **Project Settings (Cài đặt dự án)** > **Service Accounts (Tài khoản dịch vụ)**.
-   - Nhấn nút **Generate new private key** để tải file chứng chỉ về máy.
-   - Đổi tên file vừa tải thành `serviceAccountKey.json` và lưu vào thư mục `backend/` của dự án này.
+3. Cấu hình Database:
+   - Hãy copy file `serviceAccountKey.json` (do chủ dự án cung cấp) và dán nó vào thư mục `backend/` của dự án này.
 4. Khởi động Backend server:
    ```bash
    node server.js
