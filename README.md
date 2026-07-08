@@ -1,16 +1,60 @@
-# React + Vite
+# Hệ thống Gọi món bằng mã QR (Goimon QR System)
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Dự án này là một ứng dụng gọi món ăn tại bàn thông qua mã QR, bao gồm phần giao diện dành cho khách hàng (Frontend) và hệ thống quản lý/xử lý đơn hàng (Backend).
 
-Currently, two official plugins are available:
+## 🚀 Công nghệ sử dụng
+- **Frontend**: React.js, Vite, Tailwind CSS, React Router DOM.
+- **Backend**: Node.js, Express.js.
+- **Database**: Firebase Firestore.
+- **Authentication**: Firebase Admin SDK.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 📂 Cấu trúc thư mục
+- `/` (Root): Chứa mã nguồn Frontend (React + Vite).
+- `/backend`: Chứa mã nguồn Backend (Node + Express).
 
-## React Compiler
+## 🛠 Hướng dẫn Cài đặt & Chạy dự án (Local)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### 1. Yêu cầu hệ thống
+- Node.js (Khuyến nghị phiên bản v18 trở lên).
+- Project trên Firebase (có sử dụng Firestore Database).
 
-## Expanding the Oxlint configuration
+### 2. Cấu hình & Chạy Backend (Máy chủ xử lý)
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+1. Mở terminal và di chuyển vào thư mục backend:
+   ```bash
+   cd backend
+   ```
+2. Cài đặt các gói thư viện phụ thuộc:
+   ```bash
+   npm install
+   ```
+3. Cấu hình Firebase Admin SDK:
+   - Truy cập Firebase Console -> Chọn Project của bạn.
+   - Đi tới **Project Settings (Cài đặt dự án)** > **Service Accounts (Tài khoản dịch vụ)**.
+   - Nhấn nút **Generate new private key** để tải file chứng chỉ về máy.
+   - Đổi tên file vừa tải thành `serviceAccountKey.json` và lưu vào thư mục `backend/` của dự án này.
+4. Khởi động Backend server:
+   ```bash
+   node server.js
+   ```
+   *Nếu thành công, console sẽ báo "Firebase Admin initialized successfully" và "Server is running on port 3001".*
+
+### 3. Cấu hình & Chạy Frontend (Giao diện Web)
+
+1. Mở một terminal mới (để giữ cho backend vẫn tiếp tục chạy) và đảm bảo bạn đang ở **thư mục gốc** của dự án (nằm ngoài thư mục backend).
+2. Cài đặt các gói thư viện phụ thuộc cho React:
+   ```bash
+   npm install
+   ```
+3. Khởi động môi trường phát triển (Vite server):
+   ```bash
+   npm run dev
+   ```
+4. Truy cập vào ứng dụng thông qua đường dẫn hiện trên terminal (Thường là `http://localhost:5173`).
+
+## 🌟 Chức năng chính
+- **Dành cho Khách hàng**: Quét mã QR tại bàn, xem thực đơn (các món nổi bật, phân loại), thêm vào giỏ hàng, tùy chỉnh số lượng, ghi chú, đặt món, gọi nhân viên, và yêu cầu tính tiền. Trải nghiệm mượt mà được tối ưu 100% trên thiết bị di động (Mobile-first).
+- **Dành cho Admin/Nhân viên**: Quản lý danh mục, món ăn, quản lý mã QR bàn, nhận đơn hàng theo thời gian thực (Realtime) và theo dõi trạng thái món ăn.
+
+---
+**⚠️ Lưu ý Bảo mật:** File `serviceAccountKey.json` chứa thông tin nhạy cảm để truy cập Database. Đảm bảo file này **luôn luôn** nằm trong `.gitignore` và tuyệt đối không bao giờ được commit/push lên GitHub.
