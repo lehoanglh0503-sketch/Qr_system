@@ -60,6 +60,3 @@ Dự án này là một ứng dụng gọi món ăn tại bàn thông qua mã QR
 Sau khi khởi chạy thành công cả Backend và Frontend, bạn có thể truy cập vào trang Quản trị (Admin) bằng tài khoản mặc định sau:
 - **Tên nhân viên**: `Admin`
 - **Mật khẩu**: `123456`
-
----
-**⚠️ Lưu ý Bảo mật:** File `serviceAccountKey.json` chứa thông tin nhạy cảm để truy cập Database. Đảm bảo file này **luôn luôn** nằm trong `.gitignore` và tuyệt đối không bao giờ được commit/push lên GitHub.
