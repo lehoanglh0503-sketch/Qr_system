@@ -51,6 +51,7 @@ export default {
 
   // Orders
   getOrders: () => fetchApi('/orders'),
+  getActiveOrder: (tableName) => fetchApi(`/orders/table/${encodeURIComponent(tableName)}`),
   createOrder: (data) => fetchApi('/orders', { method: 'POST', body: JSON.stringify(data) }),
   updateOrderStatus: (id, status) => fetchApi(`/orders/${id}/status`, { method: 'PUT', body: JSON.stringify({ status }) }),
   updateOrderItemStatus: (orderId, itemIndex, status) => fetchApi(`/orders/${orderId}/items/${itemIndex}/status`, { method: 'PUT', body: JSON.stringify({ status }) }),

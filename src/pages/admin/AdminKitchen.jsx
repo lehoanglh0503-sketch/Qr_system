@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import AdminLayout from '../../layouts/AdminLayout'
 import { useAuth } from '../../App'
 import api from '../../api'
@@ -7,11 +7,13 @@ export default function AdminKitchen() {
   const { showToast } = useAuth()
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
+  const [currentTime, setCurrentTime] = useState(Date.now())
 
   useEffect(() => {
     loadOrders(true)
     const interval = setInterval(() => {
       loadOrders(false)
+      setCurrentTime(Date.now())
     }, 10000)
     return () => clearInterval(interval)
   }, [])
@@ -28,22 +30,47 @@ export default function AdminKitchen() {
     }
   }
 
-  async function handleItemStatusChange(orderId, itemIndex, newStatus) {
+  async function handleUpdateMultipleItems(orderId, itemsToUpdate, newStatus) {
     try {
-      await api.updateOrderItemStatus(orderId, itemIndex, newStatus)
+      await Promise.all(itemsToUpdate.map(item => 
+        api.updateOrderItemStatus(orderId, item.originalIndex, newStatus)
+      ))
+      
       // Optimistic update
       setOrders(prev => {
-        const copy = [...prev]
+        const copy = JSON.parse(JSON.stringify(prev))
         const orderIndex = copy.findIndex(o => o.id === orderId)
         if (orderIndex > -1) {
-          copy[orderIndex].items[itemIndex].status = newStatus
+          itemsToUpdate.forEach(item => {
+            copy[orderIndex].items[item.originalIndex].status = newStatus
+          })
         }
         return copy
       })
+      
+      if (newStatus === 'cooking') showToast('Đã bắt đầu làm món', '🔥')
+      if (newStatus === 'ready') showToast('Đã hoàn thành món', '✅')
     } catch(err) {
       showToast('Lỗi cập nhật món', '⚠️')
       loadOrders(false)
     }
+  }
+
+  // Helper to format elapsed time
+  const getElapsedTime = (createdAt) => {
+    if (!createdAt) return 'Vừa xong';
+    // If createdAt is a timestamp or date string
+    const time = typeof createdAt === 'object' && createdAt.seconds ? createdAt.seconds * 1000 : new Date(createdAt).getTime();
+    if (isNaN(time)) return 'Vừa xong';
+    
+    const diffMins = Math.floor((currentTime - time) / 60000);
+    if (diffMins <= 0) return 'Vừa xong';
+    if (diffMins >= 60) {
+      const hours = Math.floor(diffMins / 60);
+      const mins = diffMins % 60;
+      return `${hours}h ${mins}p trước`;
+    }
+    return `${diffMins} phút trước`;
   }
 
   // Group by order for kitchen view
@@ -56,105 +83,117 @@ export default function AdminKitchen() {
           orderId: order.id,
           tableName: order.tableName,
           items: itemsToCook,
-          orderStatus: order.status
+          orderStatus: order.status,
+          createdAt: order.createdAt
         })
       }
     }
   })
 
+  // Sort orders: oldest first
+  kitchenOrders.sort((a, b) => {
+    const timeA = a.createdAt?.seconds || 0;
+    const timeB = b.createdAt?.seconds || 0;
+    return timeA - timeB;
+  });
+
   return (
     <AdminLayout showHeader={true}>
-      <div style={{ fontFamily: 'sans-serif' }}>
-        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-          <h1 style={{ fontSize: '32px', fontWeight: '800', color: '#111827', marginBottom: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
-            <span style={{ fontSize: '36px' }}>🍳</span> Bếp Chế Biến
+      <div>
+        <div className="text-center mb-10">
+          <h1 className="font-serif text-[32px] font-bold text-[#0F172A] mb-2 flex items-center justify-center gap-3">
+            <span className="text-[36px]">🍳</span> Bếp Chế Biến
           </h1>
-          <p style={{ fontSize: '18px', color: '#4b5563' }}>
+          <p className="text-[18px] text-[#64748B]">
             Quản lý các món ăn đang chờ nấu
           </p>
         </div>
 
         {loading && kitchenOrders.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: 40, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
-            <svg className="animate-spin h-8 w-8 text-[#D4AF37]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            <span style={{ color: '#6b7280', fontSize: '15px' }}>Đang tải danh sách đơn...</span>
+          <div className="flex flex-col items-center justify-center py-20 gap-4">
+            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#D4AF37]"></div>
+            <span className="text-gray-500">Đang tải danh sách đơn...</span>
           </div>
         ) : kitchenOrders.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: 40, background: 'white', borderRadius: 16 }}>Bếp đang rảnh rỗi, không có đơn nào chờ nấu.</div>
+          <div className="text-center py-16 bg-white rounded-2xl border border-gray-100 shadow-sm">
+            <p className="text-lg text-gray-500">Bếp đang rảnh rỗi, không có đơn nào chờ nấu.</p>
+          </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px' }}>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             {kitchenOrders.map((kOrder) => {
-              const hasCooking = kOrder.items.some(i => i.status === 'cooking');
+              const pendingItems = kOrder.items.filter(i => i.status === 'pending');
+              const cookingItems = kOrder.items.filter(i => i.status === 'cooking');
+              const hasCooking = cookingItems.length > 0;
+              
+              const combinedNotes = kOrder.items
+                .filter(i => i.note)
+                .map(i => i.note)
+                .join(' | ');
+
               return (
-              <div key={kOrder.orderId} style={{
-                background: 'white',
-                padding: '24px',
-                borderRadius: '12px',
-                border: hasCooking ? '2px solid #D4AF37' : '1px solid #e5e7eb',
-                boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '16px'
-              }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px dashed #e5e7eb', paddingBottom: '12px' }}>
-                  <h3 style={{ margin: 0, fontSize: '20px', fontWeight: '800', color: '#111827' }}>
-                    {kOrder.tableName}
-                  </h3>
-                  <span style={{
-                    padding: '4px 10px',
-                    borderRadius: '20px',
-                    fontSize: '12px',
-                    fontWeight: 'bold',
-                    background: hasCooking ? '#fef08a' : '#fee2e2',
-                    color: hasCooking ? '#854d0e' : '#991b1b'
-                  }}>
-                    {hasCooking ? 'Đang Nấu' : 'Chờ Nấu'}
-                  </span>
-                </div>
-                
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  {kOrder.items.map(item => (
-                    <div key={item.originalIndex} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #f3f4f6', paddingBottom: '12px' }}>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#1f2937' }}>
-                          <span style={{ color: '#D4AF37', marginRight: '8px' }}>{item.quantity}x</span> 
-                          {item.name}
+                <div key={kOrder.orderId} className={`bg-white p-6 rounded-[24px] flex flex-col shadow-sm transition-all border-2 ${hasCooking ? 'border-[#F59E0B]/50' : 'border-gray-100 hover:border-gray-200'}`}>
+                  {/* Header */}
+                  <div className="flex justify-between items-center mb-4">
+                    <div className="bg-[#FAFAF9] border border-gray-100 rounded-xl px-4 py-2">
+                      <span className="font-serif text-[20px] font-bold text-[#0F172A]">{kOrder.tableName}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-[#D97706] font-bold text-[15px]">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                      {getElapsedTime(kOrder.createdAt)}
+                    </div>
+                  </div>
+                  
+                  <hr className="border-gray-100 mb-5" />
+                  
+                  {/* Item List */}
+                  <div className="flex flex-col gap-3 mb-5 flex-1">
+                    {kOrder.items.map(item => (
+                      <div key={item.originalIndex} className="flex justify-between items-start">
+                        <div className="flex gap-2 text-[16px] font-medium text-gray-800">
+                          <span className="text-gray-400 mt-0.5">•</span>
+                          <span className={item.status === 'cooking' ? 'text-[#D97706]' : ''}>{item.name}</span>
                         </div>
-                        {item.note && (
-                          <div style={{ fontSize: '13px', color: '#b91c1c', marginTop: '4px' }}>
-                            * {item.note}
-                          </div>
-                        )}
+                        <div className={`font-bold text-[16px] ${item.status === 'cooking' ? 'text-[#D97706]' : 'text-[#D4AF37]'}`}>
+                          x{item.quantity}
+                        </div>
                       </div>
-                      
-                      <div style={{ marginLeft: '16px', display: 'flex', gap: '8px' }}>
-                        {item.status === 'pending' && (
-                          <button 
-                            onClick={() => handleItemStatusChange(kOrder.orderId, item.originalIndex, 'cooking')}
-                            className="flex items-center gap-2 px-4 py-2 bg-transparent border border-[#D4AF37] text-[#D4AF37] text-[13px] font-bold rounded-full hover:bg-[#D4AF37] hover:text-[#050A1F] transition-all duration-300 shadow-sm hover:shadow-md transform hover:-translate-y-0.5"
-                          >
-                            <span>🍳</span>
-                            <span>BẮT ĐẦU NẤU</span>
-                          </button>
-                        )}
-                        {item.status === 'cooking' && (
-                          <button 
-                            onClick={() => handleItemStatusChange(kOrder.orderId, item.originalIndex, 'ready')}
-                            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-[13px] font-bold rounded-full hover:from-emerald-600 hover:to-teal-600 transition-all duration-300 shadow-sm hover:shadow-md transform hover:-translate-y-0.5"
-                          >
-                            <span>✅</span>
-                            <span>ĐÃ NẤU XONG</span>
-                          </button>
-                        )}
+                    ))}
+                  </div>
+
+                  {/* Notes */}
+                  {combinedNotes && (
+                    <div className="bg-[#FFF9EA] border border-[#FDE68A] rounded-xl p-4 mb-5 flex items-start gap-2">
+                      <span className="text-lg leading-none">📝</span>
+                      <div className="text-[#B45309] text-[15px]">
+                        <span className="font-bold">Ghi chú: </span>
+                        {combinedNotes}
                       </div>
                     </div>
-                  ))}
+                  )}
+
+                  {/* Action Button */}
+                  <div className="mt-auto">
+                    {!hasCooking ? (
+                      <button 
+                        onClick={() => handleUpdateMultipleItems(kOrder.orderId, pendingItems, 'cooking')}
+                        className="w-full py-3.5 bg-[#F59E0B] hover:bg-[#D97706] text-white font-bold text-[16px] rounded-xl transition-colors flex items-center justify-center gap-2 shadow-sm"
+                      >
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0011 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 11-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 002.5 2.5z"></path></svg>
+                        Bắt đầu làm món
+                      </button>
+                    ) : (
+                      <button 
+                        onClick={() => handleUpdateMultipleItems(kOrder.orderId, cookingItems, 'ready')}
+                        className="w-full py-3.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-[16px] rounded-xl transition-colors flex items-center justify-center gap-2 shadow-sm"
+                      >
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        Hoàn thành {cookingItems.length} món
+                      </button>
+                    )}
+                  </div>
                 </div>
-              </div>
-            )})}
+              )
+            })}
           </div>
         )}
       </div>

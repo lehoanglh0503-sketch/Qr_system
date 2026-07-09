@@ -1,24 +1,24 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import AdminLayout from '../../layouts/AdminLayout'
 import { useAuth } from '../../App'
 import api from '../../api'
 
 export default function AdminOrders() {
-  const { showToast, user } = useAuth()
+  const { showToast } = useAuth()
   const [orders, setOrders] = useState([])
   const [tables, setTables] = useState([])
-  const [selectedTable, setSelectedTable] = useState('all')
-  const [selectedStatus, setSelectedStatus] = useState('active')
+  const [selectedTableName, setSelectedTableName] = useState(null)
   const [loading, setLoading] = useState(true)
   const [printingOrder, setPrintingOrder] = useState(null)
-  const [payingOrder, setPayingOrder] = useState(null)
+  
+  // Payment modal state
+  const [showPaymentModal, setShowPaymentModal] = useState(false)
   const [paymentMethod, setPaymentMethod] = useState('cash')
   const [orderNote, setOrderNote] = useState('')
 
   useEffect(() => {
     loadOrders(true)
     loadTables()
-    // Tự động tải lại đơn mỗi 10 giây
     const interval = setInterval(() => {
       loadOrders(false)
     }, 10000)
@@ -29,7 +29,9 @@ export default function AdminOrders() {
     if (printingOrder) {
       const timer = setTimeout(() => {
         window.print()
-        handleStatusChange(printingOrder.id, 'paid')
+        if (printingOrder.shouldPay) {
+          handleStatusChange(printingOrder.id, 'paid')
+        }
         setPrintingOrder(null)
       }, 500)
       return () => clearTimeout(timer)
@@ -76,19 +78,32 @@ export default function AdminOrders() {
     }
   }
 
-  const filteredOrders = selectedTable === 'all' ? orders : orders.filter(o => o.tableName === selectedTable)
-  const displayOrders = filteredOrders.filter(o => {
-    if (selectedStatus === 'active') return o.status !== 'paid'
-    if (selectedStatus === 'paid') return o.status === 'paid'
-    return true
-  })
-  
-  const pendingCount = orders.filter(o => o.status === 'pending').length
-  const unpaidCount = orders.filter(o => o.status === 'completed').length
+  const handlePrintOnly = (order) => {
+    setPrintingOrder({ ...order, shouldPay: false })
+  }
+
+  const handlePay = (order) => {
+    // If order has pending items, warn
+    const allServed = order.items?.every(i => i.status === 'served')
+    if (!allServed) {
+      if (!window.confirm('Vẫn còn món đang làm hoặc chưa bưng. Bạn có chắc chắn muốn thanh toán không?')) {
+        return
+      }
+    }
+    setShowPaymentModal(true)
+  }
+
+  const confirmPayment = (order) => {
+    setPrintingOrder({ ...order, paymentMethod, orderNote, shouldPay: true })
+    setShowPaymentModal(false)
+  }
+
+  // Get active order for selected table
+  const selectedOrder = orders.find(o => o.tableName === selectedTableName && o.status !== 'paid')
 
   return (
     <>
-      {/* Giao diện in hóa đơn (ẩn trên màn hình, chỉ hiện khi in) */}
+      {/* Giao diện in hóa đơn */}
       {printingOrder && (
         <div className="print-only hidden print:block" style={{ width: '80mm', margin: '0 auto', fontFamily: 'monospace', color: '#000', padding: '10px', fontSize: '12px', background: 'white' }}>
           <div style={{ textAlign: 'center', marginBottom: '15px' }}>
@@ -97,7 +112,9 @@ export default function AdminOrders() {
             <p style={{ margin: '2px 0 0 0', fontSize: '12px' }}>SĐT: 0123 456 789</p>
           </div>
           
-          <h3 style={{ textAlign: 'center', margin: '10px 0', fontSize: '16px', fontWeight: 'bold', borderTop: '1px dashed #000', borderBottom: '1px dashed #000', padding: '5px 0' }}>HÓA ĐƠN THANH TOÁN</h3>
+          <h3 style={{ textAlign: 'center', margin: '10px 0', fontSize: '16px', fontWeight: 'bold', borderTop: '1px dashed #000', borderBottom: '1px dashed #000', padding: '5px 0' }}>
+            HÓA ĐƠN THANH TOÁN
+          </h3>
           
           <div style={{ marginBottom: '10px', fontSize: '12px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Bàn:</span> <strong>{printingOrder.tableName}</strong></div>
@@ -117,8 +134,11 @@ export default function AdminOrders() {
             <tbody>
               {printingOrder.items?.map((i, idx) => (
                 <tr key={idx}>
-                  <td style={{ padding: '4px 0' }}>{i.quantity}</td>
-                  <td style={{ padding: '4px 0' }}>{i.name}</td>
+                  <td style={{ padding: '4px 0', verticalAlign: 'top' }}>{i.quantity}</td>
+                  <td style={{ padding: '4px 0' }}>
+                    <div>{i.name}</div>
+                    <div style={{ color: '#666', fontSize: '10px' }}>{Number(i.price).toLocaleString('vi-VN')}đ</div>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -149,400 +169,282 @@ export default function AdminOrders() {
         </div>
       )}
 
-      {/* Giao diện chính (ẩn khi in) */}
+      {/* Main UI */}
       <div className="no-print print:hidden">
-        {payingOrder ? (
-          <AdminLayout showHeader={false}>
-        <div style={{ background: '#f8f9fa', minHeight: '100vh', padding: '40px' }}>
-          <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '30px' }}>
-              <button onClick={() => setPayingOrder(null)} style={{ background: 'white', border: '1px solid #e5e7eb', borderRadius: '8px', padding: '8px 16px', cursor: 'pointer', fontWeight: 'bold' }}>
-                &larr; Quay lại
-              </button>
-              <h1 style={{ fontSize: '24px', fontWeight: 'bold', margin: 0, color: '#111827' }}>Thanh toán bàn {payingOrder.tableName}</h1>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '30px' }}>
-              {/* Left Column */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                <div style={{ background: 'white', padding: '24px', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-                  <h2 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '16px', color: '#111827' }}>Phương thức thanh toán</h2>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '16px', border: paymentMethod === 'cash' ? '2px solid #3b82f6' : '1px solid #e5e7eb', borderRadius: '8px', cursor: 'pointer', background: paymentMethod === 'cash' ? '#eff6ff' : 'white' }}>
-                      <input type="radio" name="payment" value="cash" checked={paymentMethod === 'cash'} onChange={() => setPaymentMethod('cash')} style={{ width: '20px', height: '20px', accentColor: '#3b82f6' }} />
-                      <span style={{ fontSize: '24px' }}>💵</span>
-                      <span style={{ fontWeight: '600', color: '#374151' }}>Thanh toán bằng Tiền mặt</span>
-                    </label>
-
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '16px', border: paymentMethod === 'qr' ? '2px solid #3b82f6' : '1px solid #e5e7eb', borderRadius: '8px', cursor: 'pointer', background: paymentMethod === 'qr' ? '#eff6ff' : 'white' }}>
-                      <input type="radio" name="payment" value="qr" checked={paymentMethod === 'qr'} onChange={() => setPaymentMethod('qr')} style={{ width: '20px', height: '20px', accentColor: '#3b82f6' }} />
-                      <span style={{ fontSize: '24px' }}>📱</span>
-                      <span style={{ fontWeight: '600', color: '#374151' }}>Chuyển khoản qua QR - MB Bank</span>
-                    </label>
-
+        <AdminLayout showHeader={true}>
+          <div className="flex min-h-[calc(100vh-140px)] gap-6 font-sans">
+            
+            {/* Left Panel: Tables Grid */}
+            <div className="flex-1 flex flex-col h-full bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+              <div className="flex justify-between items-center px-6 py-5 border-b border-gray-100 bg-white z-10">
+                <h2 className="text-2xl font-serif font-bold text-gray-900">Sơ Đồ {tables.length} Bàn Ăn L'Étoile</h2>
+                <div className="flex flex-col sm:flex-row items-end sm:items-center gap-2 sm:gap-6 text-sm font-medium">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#10b981]"></span>
+                    <span className="text-gray-600">Trống</span>
                   </div>
-                </div>
-
-                <div style={{ background: 'white', padding: '24px', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-                  <h2 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '16px', color: '#111827' }}>Ghi chú đơn hàng</h2>
-                  <textarea 
-                    value={orderNote}
-                    onChange={e => setOrderNote(e.target.value)}
-                    placeholder="Nhập ghi chú (nếu có)..." 
-                    style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #e5e7eb', minHeight: '100px', resize: 'vertical', color: '#374151' }}
-                  ></textarea>
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#ef4444]"></span>
+                    <span className="text-gray-600">Đang phục vụ</span>
+                  </div>
                 </div>
               </div>
-
-              {/* Right Column */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                <div style={{ background: 'white', padding: '24px', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-                  <h2 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '16px', color: '#111827' }}>Giỏ hàng</h2>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxHeight: '300px', overflowY: 'auto', paddingRight: '8px' }}>
-                    {payingOrder.items?.map((item, idx) => (
-                      <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                          <div style={{ width: '40px', height: '40px', background: '#f3f4f6', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>
-                            🍽️
-                          </div>
-                          <div>
-                            <div style={{ fontWeight: '600', color: '#111827', fontSize: '15px' }}>{item.name}</div>
-                            <div style={{ fontSize: '13px', color: '#6b7280' }}>Số lượng: {item.quantity}</div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
+              
+              <div className="flex-1 overflow-y-auto p-6 bg-gray-50/50">
+                {loading && tables.length === 0 ? (
+                  <div className="flex justify-center items-center h-full">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#D4AF37]"></div>
                   </div>
-                </div>
-
-                <div style={{ background: 'white', padding: '24px', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-                  <h2 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '16px', color: '#111827' }}>Tóm tắt đơn hàng</h2>
-                  
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', color: '#4b5563' }}>
-                    <span>Tổng tiền hàng</span>
-                    <span>{Number(payingOrder.totalAmount).toLocaleString('vi-VN')} đ</span>
-                  </div>
-                  
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', color: '#4b5563' }}>
-                    <span>Thuế / VAT</span>
-                    <span>-</span>
-                  </div>
-
-                  <div style={{ borderTop: '1px solid #e5e7eb', paddingTop: '20px', marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontWeight: 'bold', fontSize: '16px', color: '#111827' }}>Tổng thanh toán</span>
-                    <span style={{ fontWeight: '900', fontSize: '24px', color: '#ef4444' }}>{Number(payingOrder.totalAmount).toLocaleString('vi-VN')} đ</span>
-                  </div>
-
-                  <button 
-                    onClick={() => {
-                      setPrintingOrder({ ...payingOrder, paymentMethod, orderNote })
-                      setPayingOrder(null)
-                    }}
-                    style={{ width: '100%', background: '#050A1F', color: 'white', padding: '16px', borderRadius: '8px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', border: 'none' }}
-                    className="hover:bg-gray-800 transition-colors"
-                  >
-                    Thanh Toán & In Bill
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </AdminLayout>
-        ) : (
-      <AdminLayout showHeader={true}>
-      <div style={{ fontFamily: 'sans-serif' }}>
-        
-        {/* Page Header */}
-        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-          <h1 style={{ fontSize: '32px', fontWeight: '800', color: '#111827', marginBottom: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
-            <span style={{ fontSize: '36px', opacity: 0.8 }}>🍽️</span> Đơn Gọi Món
-          </h1>
-          <p style={{ fontSize: '18px', color: '#4b5563' }}>
-            Theo dõi trạng thái đơn gọi món của bạn
-          </p>
-        </div>
-
-        {/* Controls Row */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
-          <div style={{ display: 'flex', gap: '12px' }}>
-            <select 
-              value={selectedTable}
-              onChange={(e) => setSelectedTable(e.target.value)}
-              className="focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow"
-              style={{
-              padding: '12px 24px',
-              fontSize: '16px',
-              color: '#374151',
-              background: '#f3f4f6',
-              border: 'none',
-              borderRadius: '8px',
-              cursor: 'pointer'
-            }}>
-              <option value="all">Tất cả bàn</option>
-              {tables.map(table => (
-                <option key={table.id} value={table.name}>{table.name}</option>
-              ))}
-            </select>
-
-            <select 
-              value={selectedStatus}
-              onChange={(e) => setSelectedStatus(e.target.value)}
-              className="focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow"
-              style={{
-              padding: '12px 24px',
-              fontSize: '16px',
-              color: '#374151',
-              background: '#f3f4f6',
-              border: 'none',
-              borderRadius: '8px',
-              cursor: 'pointer'
-            }}>
-              <option value="active">Đơn đang phục vụ</option>
-              <option value="paid">Lịch sử (Đã thanh toán)</option>
-              <option value="all">Tất cả trạng thái</option>
-            </select>
-          </div>
-          <div style={{ display: 'flex', gap: '12px' }}>
-            <button style={{
-              padding: '12px 16px',
-              background: '#f3f4f6',
-              border: 'none',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontSize: '18px'
-            }}>
-              🔔
-            </button>
-            <button onClick={() => loadOrders(true)} className="hover:bg-gray-200 active:scale-95 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all" style={{
-              padding: '12px 24px',
-              background: '#f3f4f6',
-              border: 'none',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontSize: '16px',
-              fontWeight: '500',
-              color: '#374151',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px'
-            }}>
-              <span className={loading ? 'animate-spin' : ''}>↻</span> Tải Đơn Mới
-            </button>
-          </div>
-        </div>
-
-        {/* Stat Cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
-          
-          <div style={{
-            background: 'white',
-            padding: '24px',
-            borderRadius: '16px',
-            boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '24px'
-          }}>
-            <div style={{
-              width: '64px',
-              height: '64px',
-              background: '#f87171', // light red
-              borderRadius: '16px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '28px',
-              color: 'white'
-            }}>
-              🕒
-            </div>
-            <div>
-              <div style={{ fontSize: '36px', fontWeight: '800', color: '#111827', lineHeight: 1 }}>{pendingCount}</div>
-              <div style={{ fontSize: '15px', color: '#6b7280', marginTop: '4px' }}>Đơn chờ xác nhận</div>
-            </div>
-          </div>
-
-          <div style={{
-            background: 'white',
-            padding: '24px',
-            borderRadius: '16px',
-            boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '24px'
-          }}>
-            <div style={{
-              width: '64px',
-              height: '64px',
-              background: '#b91c1c', // dark red
-              borderRadius: '16px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '28px',
-              color: 'white'
-            }}>
-              💳
-            </div>
-            <div>
-              <div style={{ fontSize: '36px', fontWeight: '800', color: '#111827', lineHeight: 1 }}>{unpaidCount}</div>
-              <div style={{ fontSize: '15px', color: '#6b7280', marginTop: '4px' }}>Đơn đã phục vụ (chờ thanh toán)</div>
-            </div>
-          </div>
-
-        </div>
-
-        {/* Orders List */}
-        <div style={{ marginTop: 30 }}>
-          {loading ? (
-            <div style={{ textAlign: 'center', padding: 40, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
-              <svg className="animate-spin h-8 w-8 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              <span style={{ color: '#6b7280', fontSize: '15px' }}>Đang tải danh sách...</span>
-            </div>
-          ) : displayOrders.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: 40, background: 'white', borderRadius: 16 }}>Chưa có đơn hàng nào</div>
-          ) : (
-            <div style={{ display: 'grid', gap: 16 }}>
-              {displayOrders.map(order => (
-                <div key={order.id} style={{ 
-                  background: 'white', 
-                  padding: '24px', 
-                  borderRadius: '12px', 
-                  border: '1px solid #e5e7eb',
-                  display: 'flex', 
-                  justifyContent: 'space-between', 
-                  alignItems: 'center',
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-                  position: 'relative',
-                  overflow: 'hidden'
-                }}>
-                  {/* Status Indicator Line */}
-                  <div style={{
-                    position: 'absolute',
-                    left: 0,
-                    top: 0,
-                    bottom: 0,
-                    width: '4px',
-                    background: order.status === 'pending' ? '#ef4444' : '#10b981'
-                  }} />
-
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginLeft: '12px' }}>
-                    {/* Header */}
-                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px' }}>
-                      <h3 style={{ margin: 0, fontSize: '20px', fontWeight: '700', color: '#111827' }}>
-                        {order.tableName}
-                      </h3>
-                      <span style={{ color: '#6b7280', fontSize: '14px' }}>
-                        #{order.id?.substring(0, 6).toUpperCase() || 'NEW'}
-                      </span>
-                    </div>
-                    
-                    {/* Items List */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      {order.items?.map((i, idx) => (
-                        <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '15px', padding: '8px', background: '#f9fafb', borderRadius: '8px' }}>
-                          <div style={{ display: 'flex', gap: '8px' }}>
-                            <span style={{ color: '#6b7280', fontWeight: '500' }}>{i.quantity} x</span>
-                            <span style={{ color: '#374151', fontWeight: '500' }}>{i.name}</span>
-                          </div>
-                          <div>
-                            {i.status === 'ready' && (
-                              <button 
-                                onClick={() => handleItemStatusChange(order.id, idx, 'served')}
-                                className="px-3 py-1 bg-[#10b981] text-white text-xs font-bold rounded hover:bg-[#059669] transition-colors"
-                              >
-                                Đã bưng
-                              </button>
-                            )}
-                            {i.status === 'served' && (
-                              <span className="text-xs font-bold text-gray-400">Đã phục vụ</span>
-                            )}
-                            {(i.status === 'pending' || i.status === 'cooking') && (
-                              <span className="text-xs font-bold text-orange-400">Bếp đang làm</span>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '20px' }}>
-                    {/* Price */}
-                    <div style={{ fontSize: '20px', fontWeight: '700', color: '#111827' }}>
-                      {Number(order.totalAmount).toLocaleString('vi-VN')} đ
-                    </div>
-                    
-                    {/* Actions */}
-                    <div>
-                      {order.status === 'pending' && (
-                        <button 
-                          onClick={() => {
-                            const allServed = order.items?.every(i => i.status === 'served')
-                            if (!allServed) {
-                              if (!window.confirm('Vẫn còn món đang làm hoặc chưa bưng. Bạn có chắc chắn muốn báo Hoàn thành đơn này để thanh toán không?')) {
-                                return
-                              }
-                            }
-                            handleStatusChange(order.id, 'completed')
-                          }} 
-                          className="bg-gray-900 hover:bg-gray-700 text-white font-medium text-sm rounded-lg px-6 py-2.5 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900"
+                ) : (
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                    {tables.map((table, idx) => {
+                      const tableOrders = orders.filter(o => o.tableName === table.name && o.status !== 'paid');
+                      const activeOrder = tableOrders.length > 0 ? tableOrders[0] : null;
+                      const isSelected = selectedTableName === table.name;
+                      const isOccupied = !!activeOrder;
+                      
+                      return (
+                        <div 
+                          key={table.id || idx}
+                          onClick={() => setSelectedTableName(table.name)}
+                          className={`relative flex flex-col justify-between cursor-pointer rounded-[20px] p-6 border transition-all duration-200 min-h-[140px]
+                            ${isOccupied 
+                              ? (isSelected ? 'border-[#ef4444] bg-[#fef2f2] shadow-md ring-4 ring-[#ef4444]/10 z-10 scale-[1.02]' : 'border-red-100 bg-[#fef2f2] hover:border-red-200 hover:shadow-md shadow-sm')
+                              : (isSelected ? 'border-[#10b981] bg-white shadow-md ring-4 ring-[#10b981]/10 z-10 scale-[1.02]' : 'border-gray-100 bg-white hover:border-gray-300 hover:shadow-md shadow-sm')
+                            }`}
                         >
-                          Hoàn thành
-                        </button>
-                      )}
-                      {order.status === 'completed' && (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-end' }}>
-                          <span style={{ 
-                            padding: '8px 16px', 
-                            background: '#f3f4f6', 
-                            color: '#4b5563', 
-                            borderRadius: '8px',
-                            fontWeight: '500',
-                            fontSize: '14px'
-                          }}>
-                            Đã phục vụ
-                          </span>
-                          {(user?.role === 'Thu ngân' || user?.role === 'Admin' || user?.role === 'Cashier') && (
-                            <button 
-                              onClick={() => {
-                                setPaymentMethod('cash')
-                                setOrderNote('')
-                                setPayingOrder(order)
-                              }} 
-                              className="bg-[#D4AF37] hover:bg-[#E6C087] text-[#050A1F] font-bold text-sm rounded-lg px-6 py-2.5 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#D4AF37] shadow-md"
-                            >
-                              Thu Tiền & In Bill
-                            </button>
+                          <div className="flex justify-between items-start mb-2">
+                            <h3 className={`font-serif text-[20px] font-bold ${isSelected ? 'text-[#050A1F]' : 'text-[#0F172A]'}`}>{table.name}</h3>
+                            <span className={`w-2.5 h-2.5 rounded-full shadow-sm mt-1.5 ${isOccupied ? 'bg-[#ef4444]' : 'bg-[#10b981]'}`}></span>
+                          </div>
+                          
+                          {isOccupied && (
+                            <div className="flex justify-between items-end mt-auto pt-4">
+                              <div className="flex items-center gap-1">
+                                <span className="text-[15px] font-bold text-[#ef4444]">{activeOrder.items?.reduce((sum, i) => sum + i.quantity, 0)}</span>
+                                <span className="text-[13px] font-medium text-[#ef4444]">món</span>
+                              </div>
+                              <span className="text-[16px] font-bold text-[#ef4444]">{Number(activeOrder.totalAmount).toLocaleString('vi-VN')}đ</span>
+                            </div>
                           )}
                         </div>
-                      )}
-                      {order.status === 'paid' && (
-                        <span style={{ 
-                          padding: '8px 16px', 
-                          background: '#dcfce7', 
-                          color: '#166534', 
-                          borderRadius: '8px',
-                          fontWeight: '700',
-                          fontSize: '14px'
-                        }}>
-                          ✅ Đã thanh toán
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            {/* Right Panel: Receipt */}
+            <div className="w-[380px] xl:w-[450px] h-full bg-white rounded-2xl shadow-md border border-gray-100 flex flex-col flex-shrink-0 relative">
+              {selectedTableName ? (
+                <>
+                  {/* Receipt Header */}
+                  <div className="p-6 pb-4 border-b border-gray-100 bg-white rounded-t-2xl z-10 shadow-sm">
+                    <div className="flex justify-between items-start mb-2">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-[#fffbf2] border border-[#D4AF37]/30 text-[#D4AF37] rounded-lg flex items-center justify-center">
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                        </div>
+                        <div>
+                          <h2 className="text-xl font-serif font-bold text-gray-900">Chi Tiết Hóa Đơn</h2>
+                          <div className="text-sm font-medium text-[#D4AF37]">{selectedTableName}</div>
+                        </div>
+                      </div>
+                      
+                      {selectedOrder && (
+                        <span className="px-3 py-1 bg-red-50 text-[#ef4444] text-xs font-bold rounded-full uppercase tracking-wider border border-red-100">
+                          {selectedOrder.status}
                         </span>
                       )}
                     </div>
                   </div>
+                  
+                  {selectedOrder ? (
+                    <>
+                      {/* Receipt Items */}
+                      <div className="flex-1 overflow-y-auto p-6 bg-gray-50/30">
+                        <div className="space-y-4">
+                          {selectedOrder.items?.map((item, idx) => (
+                            <div key={idx} className="flex flex-col group relative">
+                              <div className="flex justify-between items-start">
+                                <div className="flex-1 pr-4">
+                                  <div className="font-semibold text-gray-900 text-[15px]">{item.name}</div>
+                                  <div className="text-sm text-gray-500 mt-0.5">{Number(item.price).toLocaleString('vi-VN')}đ/món</div>
+                                </div>
+                                <div className="text-right">
+                                  <div className="text-sm font-bold text-gray-900">x{item.quantity}</div>
+                                  <div className="font-bold text-gray-900 mt-1">{Number(item.price * item.quantity).toLocaleString('vi-VN')}đ</div>
+                                </div>
+                              </div>
+                              
+                              {/* Item status / actions for cashier */}
+                              <div className="mt-2 flex gap-2">
+                                {item.status === 'ready' && (
+                                  <button onClick={() => handleItemStatusChange(selectedOrder.id, idx, 'served')} className="text-[10px] font-bold px-2 py-1 bg-[#10b981] text-white rounded cursor-pointer hover:bg-[#059669]">
+                                    Đánh dấu đã bưng
+                                  </button>
+                                )}
+                                {(item.status === 'pending' || item.status === 'cooking') && (
+                                  <span className="text-[10px] font-bold px-2 py-1 bg-orange-100 text-orange-600 border border-orange-200 rounded">
+                                    Đang nấu
+                                  </span>
+                                )}
+                                {item.status === 'served' && (
+                                  <span className="text-[10px] font-bold px-2 py-1 bg-gray-100 text-gray-500 rounded">
+                                    Đã phục vụ
+                                  </span>
+                                )}
+                              </div>
+                              
+                              <div className="w-full h-px border-b border-dashed border-gray-200 mt-4"></div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      
+                      {/* Receipt Summary */}
+                      <div className="p-6 bg-white border-t border-gray-100 rounded-b-2xl shadow-[0_-10px_20px_-10px_rgba(0,0,0,0.05)]">
+                        <div className="space-y-3 mb-6">
+                          <div className="flex justify-between items-center text-sm">
+                            <span className="text-gray-600">Tạm tính:</span>
+                            <span className="font-medium text-gray-900">{Number(selectedOrder.totalAmount).toLocaleString('vi-VN')}đ</span>
+                          </div>
+                          <div className="flex justify-between items-center text-sm">
+                            <span className="text-gray-600">Giảm giá (Discount):</span>
+                            <select className="border border-gray-200 rounded p-1 text-sm bg-gray-50 outline-none focus:border-[#D4AF37]">
+                              <option value="0">0%</option>
+                              <option value="5">5%</option>
+                              <option value="10">10%</option>
+                            </select>
+                          </div>
+                          <div className="flex justify-between items-center text-sm">
+                            <span className="text-gray-600">Thuế VAT (8%):</span>
+                            <span className="font-medium text-gray-900">{Number(selectedOrder.totalAmount * 0.08).toLocaleString('vi-VN')}đ</span>
+                          </div>
+                          
+                          <div className="h-px bg-gray-200 my-4"></div>
+                          
+                          <div className="flex justify-between items-center">
+                            <span className="text-base font-bold text-gray-900">Tổng thanh toán:</span>
+                            <span className="text-2xl font-bold text-[#D4AF37]">
+                              {Number(selectedOrder.totalAmount * 1.08).toLocaleString('vi-VN')}đ
+                            </span>
+                          </div>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-3">
+                          <button 
+                            onClick={() => handlePrintOnly(selectedOrder)}
+                            className="py-3.5 px-4 rounded-xl border-2 border-gray-200 bg-[#f9fafb] text-gray-700 font-bold hover:bg-gray-100 hover:border-gray-300 transition-colors flex items-center justify-center gap-2"
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                            In Hóa Đơn
+                          </button>
+                          <button 
+                            onClick={() => handlePay(selectedOrder)}
+                            className="py-3.5 px-4 rounded-xl bg-[#D4AF37] text-white font-bold hover:bg-[#b8952b] transition-colors shadow-lg shadow-[#D4AF37]/30 flex items-center justify-center gap-2"
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            Thanh Toán
+                          </button>
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-gray-500 bg-gray-50/50">
+                      <div className="w-24 h-24 mb-6 opacity-20">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><line x1="9" y1="9" x2="9.01" y2="9"></line><line x1="15" y1="9" x2="15.01" y2="9"></line></svg>
+                      </div>
+                      <h3 className="text-xl font-medium text-gray-700 mb-2">Bàn này đang trống</h3>
+                      <p className="text-sm">Chưa có đơn hàng nào được ghi nhận cho bàn này.</p>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="flex-1 flex flex-col relative bg-white rounded-2xl">
+                  <div className="p-6 pb-4 border-b border-gray-100 bg-white rounded-t-2xl z-10 shadow-sm">
+                    <div className="flex justify-between items-start mb-2">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-[#fffbf2] border border-[#D4AF37]/30 text-[#D4AF37] rounded-lg flex items-center justify-center">
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                        </div>
+                        <div>
+                          <h2 className="text-xl font-serif font-bold text-gray-900">Chi Tiết Hóa Đơn</h2>
+                          <div className="text-sm font-medium text-[#D4AF37]">Chưa chọn bàn</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-white rounded-b-2xl">
+                    <p className="text-base font-medium text-gray-500 leading-relaxed max-w-[250px]">Vui lòng chọn bàn trên sơ đồ để xem chi tiết hóa đơn hoặc thanh toán.</p>
+                  </div>
                 </div>
-              ))}
+              )}
             </div>
-          )}
-        </div>
-      </div>
-      </AdminLayout>
-        )}
+            
+            {/* Payment Modal */}
+            {showPaymentModal && selectedOrder && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+                <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-fadeInUp">
+                  <div className="flex justify-between items-center p-6 border-b border-gray-100">
+                    <h3 className="text-xl font-bold text-gray-900">Thanh toán {selectedTableName}</h3>
+                    <button onClick={() => setShowPaymentModal(false)} className="text-gray-400 hover:text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-full p-2 transition-colors">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                  </div>
+                  
+                  <div className="p-6">
+                    <div className="mb-6">
+                      <div className="text-4xl font-bold text-center text-[#ef4444] mb-2">
+                        {Number(selectedOrder.totalAmount * 1.08).toLocaleString('vi-VN')}đ
+                      </div>
+                      <div className="text-center text-gray-500 text-sm">Tổng tiền đã bao gồm VAT</div>
+                    </div>
+                    
+                    <h4 className="font-semibold text-gray-900 mb-3">Phương thức thanh toán</h4>
+                    <div className="space-y-3 mb-6">
+                      <label className={`flex items-center p-4 border rounded-xl cursor-pointer transition-all ${paymentMethod === 'cash' ? 'border-[#D4AF37] bg-[#fffbf2] shadow-sm' : 'border-gray-200 hover:border-gray-300'}`}>
+                        <input type="radio" name="payment" value="cash" checked={paymentMethod === 'cash'} onChange={() => setPaymentMethod('cash')} className="w-5 h-5 text-[#D4AF37] focus:ring-[#D4AF37]" />
+                        <span className="ml-3 font-medium text-gray-900 flex-1">Tiền mặt</span>
+                        <span className="text-2xl">💵</span>
+                      </label>
+                      <label className={`flex items-center p-4 border rounded-xl cursor-pointer transition-all ${paymentMethod === 'qr' ? 'border-[#D4AF37] bg-[#fffbf2] shadow-sm' : 'border-gray-200 hover:border-gray-300'}`}>
+                        <input type="radio" name="payment" value="qr" checked={paymentMethod === 'qr'} onChange={() => setPaymentMethod('qr')} className="w-5 h-5 text-[#D4AF37] focus:ring-[#D4AF37]" />
+                        <span className="ml-3 font-medium text-gray-900 flex-1">Chuyển khoản / Quét QR</span>
+                        <span className="text-2xl">📱</span>
+                      </label>
+                    </div>
+
+                    <h4 className="font-semibold text-gray-900 mb-3">Ghi chú (Tùy chọn)</h4>
+                    <textarea 
+                      value={orderNote}
+                      onChange={e => setOrderNote(e.target.value)}
+                      placeholder="Thêm ghi chú đơn hàng..."
+                      className="w-full border border-gray-200 rounded-xl p-3 h-24 resize-none outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37]"
+                    ></textarea>
+                  </div>
+                  
+                  <div className="p-6 bg-gray-50 border-t border-gray-100 flex gap-3">
+                    <button 
+                      onClick={() => setShowPaymentModal(false)}
+                      className="flex-1 py-3 px-4 bg-white border border-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition-colors"
+                    >
+                      Hủy bỏ
+                    </button>
+                    <button 
+                      onClick={() => confirmPayment(selectedOrder)}
+                      className="flex-1 py-3 px-4 bg-[#D4AF37] text-white font-bold rounded-xl hover:bg-[#b8952b] transition-colors shadow-md shadow-[#D4AF37]/20"
+                    >
+                      Hoàn Tất & In Bill
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+          </div>
+        </AdminLayout>
       </div>
     </>
   )

@@ -15,20 +15,61 @@ router.get('/', authMiddleware, async (req, res) => {
   }
 });
 
-// Create new order (Public/Customer)
+// Create new order or append to existing (Public/Customer)
 router.post('/', async (req, res) => {
   try {
     const { tableName, items, totalAmount, note } = req.body;
-    const newOrder = {
-      tableName: tableName || 'Bàn chưa rõ',
-      items: (items || []).map(item => ({ ...item, status: 'pending' })),
-      totalAmount: totalAmount || 0,
-      note: note || '',
-      status: 'pending',
-      createdAt: new Date().toISOString()
-    };
-    const docRef = await db.collection('orders').add(newOrder);
-    res.json({ id: docRef.id, ...newOrder });
+    
+    // Check if there is an active order for this table
+    const snapshot = await db.collection('orders').where('tableName', '==', tableName || 'Bàn chưa rõ').get();
+    let activeOrderDoc = null;
+    snapshot.forEach(doc => {
+      if (doc.data().status !== 'paid') activeOrderDoc = doc;
+    });
+
+    if (activeOrderDoc) {
+      // Append items
+      const data = activeOrderDoc.data();
+      const newItems = [...(data.items || []), ...(items || []).map(item => ({ ...item, status: 'pending' }))];
+      const newTotalAmount = (data.totalAmount || 0) + (totalAmount || 0);
+      const newNote = data.note ? data.note + (note ? `\n${note}` : '') : (note || '');
+      
+      await db.collection('orders').doc(activeOrderDoc.id).update({
+        items: newItems,
+        totalAmount: newTotalAmount,
+        note: newNote,
+      });
+      res.json({ id: activeOrderDoc.id, items: newItems, totalAmount: newTotalAmount });
+    } else {
+      const newOrder = {
+        tableName: tableName || 'Bàn chưa rõ',
+        items: (items || []).map(item => ({ ...item, status: 'pending' })),
+        totalAmount: totalAmount || 0,
+        note: note || '',
+        status: 'pending',
+        createdAt: new Date().toISOString()
+      };
+      const docRef = await db.collection('orders').add(newOrder);
+      res.json({ id: docRef.id, ...newOrder });
+    }
+  } catch (err) {
+    res.status(500).send('Server Error');
+  }
+});
+
+// Get active order for a table (Public/Customer)
+router.get('/table/:tableName', async (req, res) => {
+  try {
+    const snapshot = await db.collection('orders')
+      .where('tableName', '==', req.params.tableName)
+      .get();
+    
+    let activeOrder = null;
+    snapshot.forEach(doc => {
+      if (doc.data().status !== 'paid') activeOrder = { id: doc.id, ...doc.data() };
+    });
+    
+    res.json(activeOrder);
   } catch (err) {
     res.status(500).send('Server Error');
   }

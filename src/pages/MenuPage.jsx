@@ -8,7 +8,6 @@ function formatPrice(n) {
 }
 
 export default function MenuPage() {
-  const { slug } = useParams()
   const [searchParams] = useSearchParams()
   const tableName = searchParams.get('table')
   const { showToast } = useAuth() || {}
@@ -26,12 +25,29 @@ export default function MenuPage() {
   const [tableNum] = useState(tableName || 'Bàn chưa rõ')
   const [search, setSearch] = useState('')
   const [note, setNote] = useState('')
-  const [callingStaff, setCallingStaff] = useState(false)
   const [requestingBill, setRequestingBill] = useState(false)
+  const [activeOrder, setActiveOrder] = useState(null)
+  const [orderedItemsOpen, setOrderedItemsOpen] = useState(false)
 
   useEffect(() => {
     loadData()
-  }, [])
+    if (tableNum) {
+      loadActiveOrder()
+      const interval = setInterval(() => {
+        loadActiveOrder()
+      }, 5000)
+      return () => clearInterval(interval)
+    }
+  }, [tableNum])
+
+  async function loadActiveOrder() {
+    try {
+      const data = await api.getActiveOrder(tableNum)
+      setActiveOrder(data)
+    } catch (err) {
+      // Ignore
+    }
+  }
 
   async function loadData() {
     try {
@@ -72,8 +88,6 @@ export default function MenuPage() {
     })
   }
 
-
-
   async function placeOrder() {
     setIsOrdering(true)
     try {
@@ -87,6 +101,7 @@ export default function MenuPage() {
       setCart([])
       setNote('')
       setCartOpen(false)
+      loadActiveOrder()
       setTimeout(() => setOrderPlaced(false), 5000)
     } catch (err) {
       if (showToast) showToast('Lỗi đặt món, vui lòng gọi nhân viên', '⚠️')
@@ -97,15 +112,12 @@ export default function MenuPage() {
   }
 
   async function handleCallStaff() {
-    setCallingStaff(true)
     try {
       await api.createNotification({ tableName: tableNum, type: 'Call_Staff' })
       if (showToast) showToast('Đã gọi nhân viên, vui lòng chờ trong giây lát', '🛎️')
       else alert('Đã gọi nhân viên, vui lòng chờ trong giây lát')
     } catch (err) {
       if (showToast) showToast('Lỗi khi gọi nhân viên', '⚠️')
-    } finally {
-      setCallingStaff(false)
     }
   }
 
@@ -325,15 +337,22 @@ export default function MenuPage() {
              </div>
           </div>
 
-          {/* Right: Cart Summary */}
-          <div className="flex items-center justify-between sm:justify-end gap-3 md:gap-6 w-full sm:w-auto relative">
-             <div className="text-left sm:text-right pl-1 sm:pl-0">
-               <div className="text-[9px] md:text-[10px] uppercase tracking-[0.1em] sm:tracking-[0.2em] text-gray-500 mb-0.5">Tạm tính</div>
-               <div className="font-serif font-bold text-[15px] sm:text-[16px] md:text-[18px] text-[#1C1917] tracking-wide">{formatPrice(totalPrice)}</div>
-             </div>
-             <button onClick={() => setCartOpen(true)} className="px-4 sm:px-6 md:px-8 py-3 sm:py-3.5 bg-[#050A1F] text-white font-bold text-[9px] sm:text-[10px] md:text-[11px] uppercase tracking-[0.1em] sm:tracking-[0.2em] hover:bg-[#1C1917] transition-colors rounded-lg sm:rounded-none relative flex-shrink-0">
-               GIỎ HÀNG {totalItems > 0 && `(${totalItems})`}
-             </button>
+           {/* Right: Cart Summary */}
+           <div className="flex items-center justify-between sm:justify-end gap-3 md:gap-6 w-full sm:w-auto relative">
+              <div className="text-left sm:text-right pl-1 sm:pl-0">
+                <div className="text-[9px] md:text-[10px] uppercase tracking-[0.1em] sm:tracking-[0.2em] text-gray-500 mb-0.5">Tạm tính</div>
+                <div className="font-serif font-bold text-[15px] sm:text-[16px] md:text-[18px] text-[#1C1917] tracking-wide">{formatPrice(totalPrice)}</div>
+              </div>
+
+              {activeOrder && activeOrder.items && activeOrder.items.length > 0 && (
+                <button onClick={() => setOrderedItemsOpen(true)} className="px-3 sm:px-4 md:px-6 py-3 sm:py-3.5 bg-white border border-[#050A1F] text-[#050A1F] font-bold text-[9px] sm:text-[10px] md:text-[11px] uppercase tracking-[0.1em] sm:tracking-[0.2em] hover:bg-gray-50 transition-colors rounded-lg sm:rounded-none relative flex-shrink-0 shadow-sm">
+                  ĐÃ GỌI
+                </button>
+              )}
+
+              <button onClick={() => setCartOpen(true)} className="px-4 sm:px-6 md:px-8 py-3 sm:py-3.5 bg-[#050A1F] text-white font-bold text-[9px] sm:text-[10px] md:text-[11px] uppercase tracking-[0.1em] sm:tracking-[0.2em] hover:bg-[#1C1917] transition-colors rounded-lg sm:rounded-none relative flex-shrink-0">
+                GIỎ HÀNG {totalItems > 0 && `(${totalItems})`}
+              </button>
              
              {/* Floating Bell Icon (Above right side) */}
              <button onClick={handleCallStaff} className="w-10 h-10 sm:w-12 sm:h-12 bg-[#8B7355] text-white flex items-center justify-center shadow-[0_4px_15px_rgba(139,115,85,0.4)] hover:bg-[#6e5b43] transition-colors absolute right-0 -top-[64px] sm:-top-[76px] rounded-full sm:rounded-md" aria-label="Gọi nhân viên">
@@ -424,6 +443,60 @@ export default function MenuPage() {
                 </div>
               </>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Ordered Items Drawer */}
+      {orderedItemsOpen && activeOrder && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onClick={() => setOrderedItemsOpen(false)} />
+          <div className="relative w-full max-w-lg bg-[#FAF8F5] rounded-t-xl sm:rounded-xl max-h-[90vh] sm:max-h-[85vh] flex flex-col shadow-2xl overflow-hidden animate-fadeInUp">
+            <div className="p-5 border-b border-[#EADDCD] flex items-center justify-between bg-white">
+              <h2 className="m-0 text-xl font-serif font-bold text-[#1C1917] flex items-center gap-2">Món đã gọi</h2>
+              <button onClick={() => setOrderedItemsOpen(false)} className="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-[#1C1917] rounded-full transition-colors font-bold">✕</button>
+            </div>
+
+            <div className="overflow-y-auto flex-1 p-5 scrollbar-hide bg-[#FAF8F5]">
+              <div className="flex flex-col gap-4">
+                {activeOrder.items?.map((item, idx) => {
+                  let statusText = "Đang chờ";
+                  let statusColor = "bg-gray-100 text-gray-600";
+                  if (item.status === 'cooking') {
+                    statusText = "Đang nấu";
+                    statusColor = "bg-orange-100 text-orange-600 border border-orange-200";
+                  } else if (item.status === 'ready') {
+                    statusText = "Chờ bưng ra";
+                    statusColor = "bg-blue-100 text-blue-600 border border-blue-200";
+                  } else if (item.status === 'served') {
+                    statusText = "Đã phục vụ";
+                    statusColor = "bg-[#10b981] text-white";
+                  }
+
+                  return (
+                    <div key={idx} className="flex items-center gap-4 bg-white border border-[#EADDCD] p-3 rounded-lg shadow-sm">
+                      <div className="flex-1 min-w-0">
+                        <div className="font-serif font-bold text-[#1C1917] text-[15px] mb-1">{item.name}</div>
+                        <div className="text-[#8B7355] font-serif text-[13px]">{formatPrice(item.price)} x {item.quantity}</div>
+                      </div>
+                      <div className="flex flex-col items-end gap-2">
+                        <span className={`text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-wide ${statusColor}`}>
+                          {statusText}
+                        </span>
+                        <span className="text-sm font-bold text-[#1C1917]">{formatPrice(item.price * item.quantity)}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="p-4 sm:p-5 bg-white border-t border-[#EADDCD] shadow-[0_-10px_20px_rgba(0,0,0,0.03)] pb-safe">
+              <div className="flex justify-between items-end">
+                <span className="text-gray-500 text-[11px] uppercase tracking-[0.1em]">Tổng hóa đơn</span>
+                <span className="text-[#1C1917] text-xl sm:text-2xl font-serif font-bold tracking-tight">{formatPrice(activeOrder.totalAmount || 0)}</span>
+              </div>
+            </div>
           </div>
         </div>
       )}

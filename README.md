@@ -6,7 +6,6 @@ Dự án này là một ứng dụng gọi món ăn tại bàn thông qua mã QR
 - **Frontend**: React.js, Vite, Tailwind CSS, React Router DOM.
 - **Backend**: Node.js, Express.js.
 - **Database**: Firebase Firestore.
-- **Authentication**: Firebase Admin SDK.
 
 ## 📂 Cấu trúc thư mục
 - `/` (Root): Chứa mã nguồn Frontend (React + Vite).

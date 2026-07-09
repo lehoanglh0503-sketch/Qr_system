@@ -10,10 +10,10 @@ router.get('/', async (req, res) => {
     if (!doc.exists) {
       // Default info if DB is empty
       const defaultInfo = {
-        name: 'Quán Ăn Ngon',
+        name: "L'Étoile",
         phone: '0853272393',
-        address: '123 Nguyễn Huệ, Quận 1, TP.HCM',
-        description: 'Quán ăn truyền thống',
+        address: 'TP.HCM',
+        description: 'Pháp',
         openTime: '06:00',
         closeTime: '22:00',
         slug: 'quan-an-ngon',

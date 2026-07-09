@@ -5,13 +5,9 @@ const bcrypt = require('bcrypt');
 const { db } = require('../firebase');
 const { authMiddleware, JWT_SECRET } = require('../middleware/auth');
 
-// Note: For a real app, users would be in Firestore. 
-// For this clone, we can hardcode the admin or store them in DB.
-// Let's use Firestore 'users' collection.
-
 // Login
 router.post('/login', async (req, res) => {
-  const { name, password, role } = req.body;
+  const { name, password } = req.body;
   
   if (!name || !password) {
     return res.status(400).json({ message: 'Tên nhân viên và mật khẩu không được để trống' });

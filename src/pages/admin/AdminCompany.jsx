@@ -8,7 +8,6 @@ export default function AdminCompany() {
   const [info, setInfo] = useState({ name: '', phone: '', address: '', description: '', openTime: '', closeTime: '', slug: '', logo: '🏪', primaryColor: '#dc2626', wifi: '' })
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [tab, setTab] = useState('info')
 
   useEffect(() => {
     api.getCompanyInfo().then(res => {
@@ -35,180 +34,124 @@ export default function AdminCompany() {
   }
 
   return (
-    <AdminLayout title="🏪 Quản Lý Quán" actions={
-      <button className="btn btn-primary btn-sm" onClick={handleSave}>
-        {saving ? '⏳ Đang lưu...' : '💾 Lưu thay đổi'}
-      </button>
-    }>
-      {/* Tab bar */}
-      <div style={{ display: 'flex', gap: 8, marginBottom: 24, borderBottom: '2px solid #e5e7eb', paddingBottom: 0 }}>
-        {[
-          { key: 'info', label: '📋 Thông tin cơ bản' },
-          { key: 'appearance', label: '🎨 Giao diện' },
-          { key: 'settings', label: '⚙️ Cài đặt' },
-        ].map(t => (
-          <button key={t.key} onClick={() => setTab(t.key)} style={{
-            padding: '10px 20px', border: 'none', background: 'none', cursor: 'pointer',
-            fontWeight: tab === t.key ? 700 : 500, fontSize: 14,
-            color: tab === t.key ? '#dc2626' : '#6b7280',
-            borderBottom: tab === t.key ? '3px solid #dc2626' : '3px solid transparent',
-            marginBottom: -2, transition: 'all 0.15s',
-          }}>
-            {t.label}
+    <AdminLayout title="Cửa hàng">
+      <div className="px-2 lg:px-8 py-6 w-full max-w-5xl mx-auto relative min-h-full">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+          <div>
+            <h1 className="text-3xl font-black text-[#050A1F] tracking-tight">Thông tin cửa hàng</h1>
+            <p className="text-gray-500 mt-2 font-medium">Quản lý tên, địa chỉ và thời gian hoạt động của nhà hàng</p>
+          </div>
+          <button 
+            onClick={handleSave} 
+            disabled={saving}
+            className="bg-[#050A1F] text-[#D4AF37] px-8 py-3.5 rounded-full font-bold shadow-lg shadow-[#050A1F]/20 hover:shadow-xl hover:-translate-y-0.5 transition-all flex items-center gap-2 group disabled:opacity-70 disabled:cursor-not-allowed"
+          >
+            {saving ? (
+              <>
+                <svg className="animate-spin w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                Đang lưu...
+              </>
+            ) : (
+              <>
+                <div className="w-6 h-6 rounded-full bg-[#D4AF37]/20 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                </div>
+                Lưu thay đổi
+              </>
+            )}
           </button>
-        ))}
-      </div>
-
-      {loading ? (
-        <div style={{ padding: 40, textAlign: 'center' }}>Đang tải...</div>
-      ) : (
-      <form onSubmit={handleSave}>
-        {tab === 'info' && (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
-            <div className="card" style={{ padding: 24, gridColumn: '1/-1' }}>
-              <h3 style={{ fontWeight: 800, marginBottom: 20, fontSize: 16 }}>Thông tin nhà hàng</h3>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-                <div className="form-group">
-                  <label className="form-label">Tên quán *</label>
-                  <input className="form-input" value={info.name} onChange={e => setField('name', e.target.value)} placeholder="Tên nhà hàng" />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Số điện thoại *</label>
-                  <input className="form-input" value={info.phone} onChange={e => setField('phone', e.target.value)} placeholder="0901234567" />
-                </div>
-                <div className="form-group" style={{ gridColumn: '1/-1' }}>
-                  <label className="form-label">Địa chỉ</label>
-                  <input className="form-input" value={info.address} onChange={e => setField('address', e.target.value)} placeholder="Địa chỉ quán" />
-                </div>
-                <div className="form-group" style={{ gridColumn: '1/-1' }}>
-                  <label className="form-label">Mô tả quán</label>
-                  <textarea className="form-input" value={info.description} onChange={e => setField('description', e.target.value)} rows={3} placeholder="Mô tả về nhà hàng..." style={{ resize: 'vertical' }} />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Giờ mở cửa</label>
-                  <input className="form-input" type="time" value={info.openTime} onChange={e => setField('openTime', e.target.value)} />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Giờ đóng cửa</label>
-                  <input className="form-input" type="time" value={info.closeTime} onChange={e => setField('closeTime', e.target.value)} />
-                </div>
-              </div>
-            </div>
-
-            <div className="card" style={{ padding: 24, gridColumn: '1/-1' }}>
-              <h3 style={{ fontWeight: 800, marginBottom: 20, fontSize: 16 }}>Link website của bạn</h3>
-              <div className="form-group">
-                <label className="form-label">Slug (đường dẫn)</label>
-                <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-                  <span style={{ color: '#9ca3af', fontSize: 14, whiteSpace: 'nowrap' }}>goimon.shop/menu/</span>
-                  <input className="form-input" value={info.slug} onChange={e => setField('slug', e.target.value.toLowerCase().replace(/\s+/g, '-'))} placeholder="ten-quan" style={{ flex: 1 }} />
-                </div>
-              </div>
-              <div style={{ background: '#f9fafb', border: '1.5px dashed #d1d5db', borderRadius: 10, padding: '12px 16px', fontSize: 14, display: 'flex', alignItems: 'center', gap: 10 }}>
-                <span>🔗</span>
-                <span style={{ color: '#6b7280' }}>URL menu: </span>
-                <strong style={{ color: '#dc2626' }}>goimon.shop/menu/{info.slug}</strong>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {tab === 'appearance' && (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
-            <div className="card" style={{ padding: 24 }}>
-              <h3 style={{ fontWeight: 800, marginBottom: 20, fontSize: 16 }}>Logo & Thương hiệu</h3>
-              <div className="form-group">
-                <label className="form-label">Emoji logo (tạm thời)</label>
-                <input className="form-input" value={info.logo} onChange={e => setField('logo', e.target.value)} placeholder="🏪" />
-              </div>
-              <div style={{ width: 100, height: 100, background: '#f9fafb', border: '2px dashed #d1d5db', borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 48, margin: '16px 0' }}>
-                {info.logo}
-              </div>
-              <button type="button" className="btn btn-outline btn-sm">📷 Upload ảnh logo</button>
-            </div>
-
-            <div className="card" style={{ padding: 24 }}>
-              <h3 style={{ fontWeight: 800, marginBottom: 20, fontSize: 16 }}>Màu sắc chủ đạo</h3>
-              <div className="form-group">
-                <label className="form-label">Màu chính</label>
-                <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-                  <input type="color" value={info.primaryColor} onChange={e => setField('primaryColor', e.target.value)}
-                    style={{ width: 52, height: 52, border: '2px solid #e5e7eb', borderRadius: 10, cursor: 'pointer', padding: 4 }} />
-                  <input className="form-input" value={info.primaryColor} onChange={e => setField('primaryColor', e.target.value)} style={{ flex: 1 }} />
-                </div>
-              </div>
-              <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 12 }}>
-                {['#dc2626','#7c3aed','#2563eb','#059669','#d97706','#db2777'].map(c => (
-                  <button key={c} type="button" onClick={() => setField('primaryColor', c)} style={{ width: 36, height: 36, borderRadius: 8, background: c, border: info.primaryColor === c ? '3px solid #111' : '2px solid transparent', cursor: 'pointer' }} />
-                ))}
-              </div>
-
-              {/* Preview */}
-              <div style={{ marginTop: 24, background: '#f9fafb', borderRadius: 12, padding: 16 }}>
-                <p style={{ fontSize: 12, color: '#9ca3af', marginBottom: 10, fontWeight: 600 }}>PREVIEW</p>
-                <div style={{ borderBottom: `3px solid ${info.primaryColor}`, padding: '10px 14px', background: 'white', borderRadius: 8, fontSize: 14, fontWeight: 700 }}>
-                  {info.logo} {info.name}
-                </div>
-                <button type="button" style={{ marginTop: 10, background: info.primaryColor, color: 'white', border: 'none', padding: '8px 18px', borderRadius: 20, fontWeight: 700, cursor: 'pointer', fontSize: 13 }}>
-                  Đặt món
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {tab === 'settings' && (
-          <div className="card" style={{ padding: 24 }}>
-            <h3 style={{ fontWeight: 800, marginBottom: 20, fontSize: 16 }}>Cài đặt khác</h3>
-            <div className="form-group">
-              <label className="form-label">Mật khẩu WiFi (hiển thị trên menu)</label>
-              <input className="form-input" value={info.wifi} onChange={e => setField('wifi', e.target.value)} placeholder="Mật khẩu WiFi của quán" />
-            </div>
-            <div style={{ marginTop: 16 }}>
-              {[
-                { label: 'Nhận thông báo đơn hàng mới qua SMS', desc: 'Gửi SMS khi có đơn mới' },
-                { label: 'Cho phép khách nhận xét', desc: 'Khách có thể để lại đánh giá' },
-                { label: 'Hiển thị giá menu', desc: 'Khách thấy được giá tiền' },
-                { label: 'Cho phép đặt món ngoài giờ', desc: 'Nhận đơn kể cả khi đóng cửa' },
-              ].map((s, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 0', borderBottom: '1px solid #f3f4f6' }}>
-                  <div>
-                    <div style={{ fontWeight: 600, fontSize: 14 }}>{s.label}</div>
-                    <div style={{ fontSize: 12, color: '#9ca3af', marginTop: 2 }}>{s.desc}</div>
-                  </div>
-                  <ToggleSwitch defaultOn={i < 3} />
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        <div style={{ marginTop: 24, display: 'flex', gap: 12 }}>
-          <button type="submit" className="btn btn-primary" disabled={saving}>
-            {saving ? '⏳ Đang lưu...' : '💾 Lưu tất cả thay đổi'}
-          </button>
-          <button type="button" className="btn btn-outline">Huỷ</button>
         </div>
-      </form>
-      )}
-    </AdminLayout>
-  )
-}
 
-function ToggleSwitch({ defaultOn }) {
-  const [on, setOn] = useState(defaultOn)
-  return (
-    <button type="button" onClick={() => setOn(!on)} style={{
-      width: 44, height: 24, borderRadius: 12,
-      background: on ? '#dc2626' : '#d1d5db',
-      border: 'none', cursor: 'pointer', position: 'relative', transition: 'background 0.2s', flexShrink: 0,
-    }}>
-      <span style={{
-        position: 'absolute', top: 2, left: on ? 22 : 2,
-        width: 20, height: 20, borderRadius: '50%',
-        background: 'white', transition: 'left 0.2s',
-        boxShadow: '0 1px 4px rgba(0,0,0,0.2)',
-      }} />
-    </button>
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-20 text-gray-400">
+            <svg className="animate-spin w-10 h-10 mb-4 text-[#D4AF37]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <p className="font-medium text-gray-500">Đang tải thông tin...</p>
+          </div>
+        ) : (
+          <form onSubmit={handleSave} className="bg-white rounded-[2rem] p-8 shadow-sm border border-gray-100">
+            <div className="flex items-center gap-4 mb-8 pb-8 border-b border-gray-100">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#F3EFE8] to-white border border-[#EADDCD] flex items-center justify-center text-[#D4AF37] shadow-inner text-3xl">
+                {info.logo || '🏪'}
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-[#050A1F]">Hồ sơ cơ sở</h2>
+                <p className="text-gray-500 text-sm font-medium mt-1">Thông tin cơ bản sẽ hiển thị cho khách hàng</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-gray-700 ml-1">Tên quán <span className="text-red-500">*</span></label>
+                <input 
+                  value={info.name} 
+                  onChange={e => setField('name', e.target.value)} 
+                  className="w-full px-5 py-4 bg-[#F3EFE8] border-2 border-transparent rounded-2xl outline-none focus:bg-white focus:border-[#D4AF37] transition-all font-bold text-[#050A1F] placeholder-gray-400" 
+                  placeholder="Nhập tên nhà hàng" 
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-gray-700 ml-1">Số điện thoại liên hệ <span className="text-red-500">*</span></label>
+                <input 
+                  value={info.phone} 
+                  onChange={e => setField('phone', e.target.value)} 
+                  className="w-full px-5 py-4 bg-[#F3EFE8] border-2 border-transparent rounded-2xl outline-none focus:bg-white focus:border-[#D4AF37] transition-all font-bold text-[#050A1F] placeholder-gray-400" 
+                  placeholder="0901234567" 
+                />
+              </div>
+
+              <div className="space-y-2 md:col-span-2">
+                <label className="text-sm font-bold text-gray-700 ml-1">Địa chỉ chi tiết</label>
+                <input 
+                  value={info.address} 
+                  onChange={e => setField('address', e.target.value)} 
+                  className="w-full px-5 py-4 bg-[#F3EFE8] border-2 border-transparent rounded-2xl outline-none focus:bg-white focus:border-[#D4AF37] transition-all font-bold text-[#050A1F] placeholder-gray-400" 
+                  placeholder="Ví dụ: 123 Nguyễn Huệ, Quận 1, TP.HCM" 
+                />
+              </div>
+
+              <div className="space-y-2 md:col-span-2">
+                <label className="text-sm font-bold text-gray-700 ml-1">Mô tả quán</label>
+                <textarea 
+                  value={info.description} 
+                  onChange={e => setField('description', e.target.value)} 
+                  rows={4} 
+                  className="w-full px-5 py-4 bg-[#F3EFE8] border-2 border-transparent rounded-2xl outline-none focus:bg-white focus:border-[#D4AF37] transition-all font-medium text-[#050A1F] placeholder-gray-400 resize-none" 
+                  placeholder="Mô tả về nhà hàng, đặc sản, không gian..." 
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-gray-700 ml-1">Giờ mở cửa</label>
+                <div className="relative">
+                  <input 
+                    type="time" 
+                    value={info.openTime} 
+                    onChange={e => setField('openTime', e.target.value)} 
+                    className="w-full px-5 py-4 bg-[#F3EFE8] border-2 border-transparent rounded-2xl outline-none focus:bg-white focus:border-[#D4AF37] transition-all font-bold text-[#050A1F]" 
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-gray-700 ml-1">Giờ đóng cửa</label>
+                <div className="relative">
+                  <input 
+                    type="time" 
+                    value={info.closeTime} 
+                    onChange={e => setField('closeTime', e.target.value)} 
+                    className="w-full px-5 py-4 bg-[#F3EFE8] border-2 border-transparent rounded-2xl outline-none focus:bg-white focus:border-[#D4AF37] transition-all font-bold text-[#050A1F]" 
+                  />
+                </div>
+              </div>
+            </div>
+          </form>
+        )}
+      </div>
+    </AdminLayout>
   )
 }
