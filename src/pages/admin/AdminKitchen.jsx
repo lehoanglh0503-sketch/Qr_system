@@ -32,10 +32,10 @@ export default function AdminKitchen() {
 
   async function handleUpdateMultipleItems(orderId, itemsToUpdate, newStatus) {
     try {
-      await Promise.all(itemsToUpdate.map(item => 
+      await Promise.all(itemsToUpdate.map(item =>
         api.updateOrderItemStatus(orderId, item.originalIndex, newStatus)
       ))
-      
+
       // Optimistic update
       setOrders(prev => {
         const copy = JSON.parse(JSON.stringify(prev))
@@ -47,10 +47,10 @@ export default function AdminKitchen() {
         }
         return copy
       })
-      
+
       if (newStatus === 'cooking') showToast('Đã bắt đầu làm món', '🔥')
       if (newStatus === 'ready') showToast('Đã hoàn thành món', '✅')
-    } catch(err) {
+    } catch (err) {
       showToast('Lỗi cập nhật món', '⚠️')
       loadOrders(false)
     }
@@ -62,7 +62,7 @@ export default function AdminKitchen() {
     // If createdAt is a timestamp or date string
     const time = typeof createdAt === 'object' && createdAt.seconds ? createdAt.seconds * 1000 : new Date(createdAt).getTime();
     if (isNaN(time)) return 'Vừa xong';
-    
+
     const diffMins = Math.floor((currentTime - time) / 60000);
     if (diffMins <= 0) return 'Vừa xong';
     if (diffMins >= 60) {
@@ -124,7 +124,7 @@ export default function AdminKitchen() {
               const pendingItems = kOrder.items.filter(i => i.status === 'pending');
               const cookingItems = kOrder.items.filter(i => i.status === 'cooking');
               const hasCooking = cookingItems.length > 0;
-              
+
               const combinedNotes = kOrder.items
                 .filter(i => i.note)
                 .map(i => i.note)
@@ -142,9 +142,9 @@ export default function AdminKitchen() {
                       {getElapsedTime(kOrder.createdAt)}
                     </div>
                   </div>
-                  
+
                   <hr className="border-gray-100 mb-5" />
-                  
+
                   {/* Item List */}
                   <div className="flex flex-col gap-3 mb-5 flex-1">
                     {kOrder.items.map(item => (
@@ -174,7 +174,7 @@ export default function AdminKitchen() {
                   {/* Action Button */}
                   <div className="mt-auto">
                     {!hasCooking ? (
-                      <button 
+                      <button
                         onClick={() => handleUpdateMultipleItems(kOrder.orderId, pendingItems, 'cooking')}
                         className="w-full py-3.5 bg-[#F59E0B] hover:bg-[#D97706] text-white font-bold text-[16px] rounded-xl transition-colors flex items-center justify-center gap-2 shadow-sm"
                       >
@@ -182,7 +182,7 @@ export default function AdminKitchen() {
                         Bắt đầu làm món
                       </button>
                     ) : (
-                      <button 
+                      <button
                         onClick={() => handleUpdateMultipleItems(kOrder.orderId, cookingItems, 'ready')}
                         className="w-full py-3.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-[16px] rounded-xl transition-colors flex items-center justify-center gap-2 shadow-sm"
                       >

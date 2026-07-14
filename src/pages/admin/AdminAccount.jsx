@@ -6,7 +6,7 @@ import api from '../../api'
 export default function AdminAccount() {
   const { user, showToast } = useAuth()
   const [tab, setTab] = useState('profile') // 'profile' or 'staff'
-  
+
   // Profile state
   const [profile, setProfile] = useState({
     name: user?.name || '',
@@ -112,33 +112,31 @@ export default function AdminAccount() {
   return (
     <AdminLayout title="Tài khoản">
       <div className="px-2 lg:px-8 py-6 w-full max-w-6xl mx-auto relative min-h-full">
-        
+
         {/* Header & Tabs */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 pb-6 border-b border-gray-200">
           <div>
             <h1 className="text-3xl font-black text-[#050A1F] tracking-tight mb-2">Tài khoản & Nhân sự</h1>
             <p className="text-gray-500 font-medium">Quản lý thông tin cá nhân và tài khoản nhân viên</p>
           </div>
-          
+
           <div className="flex bg-gray-100 p-1.5 rounded-2xl">
-            <button 
+            <button
               onClick={() => setTab('profile')}
-              className={`px-8 py-3 rounded-xl font-bold transition-all duration-200 ${
-                tab === 'profile' 
-                  ? 'bg-white text-[#050A1F] shadow-sm' 
+              className={`px-8 py-3 rounded-xl font-bold transition-all duration-200 ${tab === 'profile'
+                  ? 'bg-white text-[#050A1F] shadow-sm'
                   : 'text-gray-500 hover:text-[#050A1F]'
-              }`}
+                }`}
             >
               Hồ sơ cá nhân
             </button>
             {user?.role === 'Admin' && (
-              <button 
+              <button
                 onClick={() => setTab('staff')}
-                className={`px-8 py-3 rounded-xl font-bold transition-all duration-200 ${
-                  tab === 'staff' 
-                    ? 'bg-white text-[#050A1F] shadow-sm' 
+                className={`px-8 py-3 rounded-xl font-bold transition-all duration-200 ${tab === 'staff'
+                    ? 'bg-white text-[#050A1F] shadow-sm'
                     : 'text-gray-500 hover:text-[#050A1F]'
-                }`}
+                  }`}
               >
                 Quản lý nhân sự
               </button>
@@ -166,21 +164,21 @@ export default function AdminAccount() {
               <form onSubmit={handleSaveProfile} className="space-y-6">
                 <div className="space-y-2">
                   <label className="text-sm font-bold text-gray-700 ml-1">Họ và tên</label>
-                  <input 
-                    type="text" 
-                    value={profile.name} 
-                    onChange={e => setProfile({...profile, name: e.target.value})} 
-                    className="w-full px-5 py-4 bg-[#F3EFE8] border-2 border-transparent rounded-2xl outline-none focus:bg-white focus:border-[#D4AF37] transition-all font-bold text-[#050A1F]" 
+                  <input
+                    type="text"
+                    value={profile.name}
+                    onChange={e => setProfile({ ...profile, name: e.target.value })}
+                    className="w-full px-5 py-4 bg-[#F3EFE8] border-2 border-transparent rounded-2xl outline-none focus:bg-white focus:border-[#D4AF37] transition-all font-bold text-[#050A1F]"
                   />
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-bold text-gray-700 ml-1">Số điện thoại đăng nhập</label>
-                  <input 
-                    type="text" 
-                    value={profile.phone} 
-                    className="w-full px-5 py-4 bg-gray-50 border-2 border-transparent rounded-2xl outline-none text-gray-500 font-bold cursor-not-allowed" 
-                    readOnly 
-                    title="Không thể đổi số điện thoại" 
+                  <input
+                    type="text"
+                    value={profile.phone}
+                    className="w-full px-5 py-4 bg-gray-50 border-2 border-transparent rounded-2xl outline-none text-gray-500 font-bold cursor-not-allowed"
+                    readOnly
+                    title="Không thể đổi số điện thoại"
                   />
                 </div>
                 <div className="pt-4">
@@ -190,7 +188,7 @@ export default function AdminAccount() {
                 </div>
               </form>
             </div>
-            
+
             {/* Password Section */}
             <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-gray-100">
               <div className="mb-10">
@@ -204,32 +202,32 @@ export default function AdminAccount() {
               <form onSubmit={handleSavePassword} className="space-y-6">
                 <div className="space-y-2">
                   <label className="text-sm font-bold text-gray-700 ml-1">Mật khẩu hiện tại</label>
-                  <input 
-                    type="password" 
-                    value={passwords.current} 
-                    onChange={e => setPasswords({...passwords, current: e.target.value})} 
-                    className="w-full px-5 py-4 bg-[#F3EFE8] border-2 border-transparent rounded-2xl outline-none focus:bg-white focus:border-[#D4AF37] transition-all font-bold text-[#050A1F]" 
-                    required 
+                  <input
+                    type="password"
+                    value={passwords.current}
+                    onChange={e => setPasswords({ ...passwords, current: e.target.value })}
+                    className="w-full px-5 py-4 bg-[#F3EFE8] border-2 border-transparent rounded-2xl outline-none focus:bg-white focus:border-[#D4AF37] transition-all font-bold text-[#050A1F]"
+                    required
                   />
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-bold text-gray-700 ml-1">Mật khẩu mới</label>
-                  <input 
-                    type="password" 
-                    value={passwords.newPass} 
-                    onChange={e => setPasswords({...passwords, newPass: e.target.value})} 
-                    className="w-full px-5 py-4 bg-[#F3EFE8] border-2 border-transparent rounded-2xl outline-none focus:bg-white focus:border-[#D4AF37] transition-all font-bold text-[#050A1F]" 
-                    required 
+                  <input
+                    type="password"
+                    value={passwords.newPass}
+                    onChange={e => setPasswords({ ...passwords, newPass: e.target.value })}
+                    className="w-full px-5 py-4 bg-[#F3EFE8] border-2 border-transparent rounded-2xl outline-none focus:bg-white focus:border-[#D4AF37] transition-all font-bold text-[#050A1F]"
+                    required
                   />
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-bold text-gray-700 ml-1">Xác nhận mật khẩu mới</label>
-                  <input 
-                    type="password" 
-                    value={passwords.confirm} 
-                    onChange={e => setPasswords({...passwords, confirm: e.target.value})} 
-                    className="w-full px-5 py-4 bg-[#F3EFE8] border-2 border-transparent rounded-2xl outline-none focus:bg-white focus:border-[#D4AF37] transition-all font-bold text-[#050A1F]" 
-                    required 
+                  <input
+                    type="password"
+                    value={passwords.confirm}
+                    onChange={e => setPasswords({ ...passwords, confirm: e.target.value })}
+                    className="w-full px-5 py-4 bg-[#F3EFE8] border-2 border-transparent rounded-2xl outline-none focus:bg-white focus:border-[#D4AF37] transition-all font-bold text-[#050A1F]"
+                    required
                   />
                 </div>
                 <div className="pt-4">
@@ -246,7 +244,7 @@ export default function AdminAccount() {
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="flex justify-between items-center mb-8">
               <h2 className="text-2xl font-bold text-[#050A1F]">Danh sách nhân viên</h2>
-              <button 
+              <button
                 onClick={() => setShowAddModal(true)}
                 className="bg-[#050A1F] text-[#D4AF37] px-6 py-3 rounded-full font-bold shadow-lg shadow-[#050A1F]/20 hover:shadow-xl hover:-translate-y-0.5 transition-all flex items-center gap-2"
               >
@@ -279,9 +277,9 @@ export default function AdminAccount() {
                       </div>
                     </div>
 
-                    <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold mb-4" 
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold mb-4"
                       style={{
-                        background: u.role === 'Admin' ? '#fee2e2' : u.role === 'Bếp' ? '#fef08a' : u.role === 'Thu ngân' ? '#dcfce7' : '#e0f2fe', 
+                        background: u.role === 'Admin' ? '#fee2e2' : u.role === 'Bếp' ? '#fef08a' : u.role === 'Thu ngân' ? '#dcfce7' : '#e0f2fe',
                         color: u.role === 'Admin' ? '#991b1b' : u.role === 'Bếp' ? '#854d0e' : u.role === 'Thu ngân' ? '#166534' : '#0369a1'
                       }}
                     >
@@ -289,18 +287,17 @@ export default function AdminAccount() {
                     </div>
 
                     <div className="flex gap-2 mt-4 pt-4 border-t border-gray-100">
-                      <button 
-                        onClick={() => { setEditingPasswordId(editingPasswordId === u.id ? null : u.id); setNewStaffPassword(''); }} 
+                      <button
+                        onClick={() => { setEditingPasswordId(editingPasswordId === u.id ? null : u.id); setNewStaffPassword(''); }}
                         className="flex-1 py-2.5 rounded-xl bg-gray-50 hover:bg-gray-100 font-bold text-[#050A1F] text-sm transition-colors"
                       >
                         Đổi mật khẩu
                       </button>
-                      <button 
-                        onClick={() => handleDeleteUser(u.id)} 
-                        disabled={u.id === user.id} 
-                        className={`px-4 py-2.5 rounded-xl font-bold text-sm transition-colors ${
-                          u.id === user.id ? 'bg-gray-50 text-gray-300 cursor-not-allowed' : 'bg-red-50 text-red-500 hover:bg-red-500 hover:text-white'
-                        }`}
+                      <button
+                        onClick={() => handleDeleteUser(u.id)}
+                        disabled={u.id === user.id}
+                        className={`px-4 py-2.5 rounded-xl font-bold text-sm transition-colors ${u.id === user.id ? 'bg-gray-50 text-gray-300 cursor-not-allowed' : 'bg-red-50 text-red-500 hover:bg-red-500 hover:text-white'
+                          }`}
                       >
                         Xóa
                       </button>
@@ -311,14 +308,14 @@ export default function AdminAccount() {
                       <div className="mt-4 p-4 bg-[#F3EFE8] rounded-2xl animate-in fade-in slide-in-from-top-2">
                         <label className="text-xs font-bold text-gray-700 block mb-2">Mật khẩu mới cho {u.name}</label>
                         <div className="flex gap-2">
-                          <input 
-                            type="password" 
+                          <input
+                            type="password"
                             value={newStaffPassword}
                             onChange={(e) => setNewStaffPassword(e.target.value)}
-                            placeholder="Tối thiểu 6 ký tự" 
+                            placeholder="Tối thiểu 6 ký tự"
                             className="flex-1 px-3 py-2 bg-white rounded-xl outline-none focus:border-[#D4AF37] font-medium text-sm"
                           />
-                          <button 
+                          <button
                             onClick={() => handleUpdateStaffPassword(u.id)}
                             disabled={!newStaffPassword || newStaffPassword.length < 6}
                             className="bg-[#050A1F] text-[#D4AF37] px-4 py-2 rounded-xl font-bold text-sm disabled:opacity-50"
@@ -349,24 +346,24 @@ export default function AdminAccount() {
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                 </button>
               </div>
-              
+
               <div className="px-8 py-2 max-h-[60vh] overflow-y-auto no-scrollbar">
                 <form id="add-user-form" onSubmit={handleAddUser} className="space-y-4">
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-gray-700 ml-1">Tên nhân viên <span className="text-red-500">*</span></label>
-                    <input type="text" value={newUser.name} onChange={e => setNewUser({...newUser, name: e.target.value})} className="w-full px-5 py-3.5 bg-[#F3EFE8] border-2 border-transparent rounded-2xl outline-none focus:bg-white focus:border-[#D4AF37] transition-all font-bold text-[#050A1F]" placeholder="Ví dụ: Nguyễn Văn A" required />
+                    <input type="text" value={newUser.name} onChange={e => setNewUser({ ...newUser, name: e.target.value })} className="w-full px-5 py-3.5 bg-[#F3EFE8] border-2 border-transparent rounded-2xl outline-none focus:bg-white focus:border-[#D4AF37] transition-all font-bold text-[#050A1F]" placeholder="Ví dụ: Nguyễn Văn A" required />
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-gray-700 ml-1">Số điện thoại đăng nhập <span className="text-red-500">*</span></label>
-                    <input type="tel" value={newUser.phone} onChange={e => setNewUser({...newUser, phone: e.target.value})} className="w-full px-5 py-3.5 bg-[#F3EFE8] border-2 border-transparent rounded-2xl outline-none focus:bg-white focus:border-[#D4AF37] transition-all font-bold text-[#050A1F]" placeholder="090..." required />
+                    <input type="tel" value={newUser.phone} onChange={e => setNewUser({ ...newUser, phone: e.target.value })} className="w-full px-5 py-3.5 bg-[#F3EFE8] border-2 border-transparent rounded-2xl outline-none focus:bg-white focus:border-[#D4AF37] transition-all font-bold text-[#050A1F]" placeholder="090..." required />
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-gray-700 ml-1">Mật khẩu <span className="text-red-500">*</span></label>
-                    <input type="password" value={newUser.password} onChange={e => setNewUser({...newUser, password: e.target.value})} className="w-full px-5 py-3.5 bg-[#F3EFE8] border-2 border-transparent rounded-2xl outline-none focus:bg-white focus:border-[#D4AF37] transition-all font-bold text-[#050A1F]" placeholder="Tối thiểu 6 ký tự" required minLength={6} />
+                    <input type="password" value={newUser.password} onChange={e => setNewUser({ ...newUser, password: e.target.value })} className="w-full px-5 py-3.5 bg-[#F3EFE8] border-2 border-transparent rounded-2xl outline-none focus:bg-white focus:border-[#D4AF37] transition-all font-bold text-[#050A1F]" placeholder="Tối thiểu 6 ký tự" required minLength={6} />
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-gray-700 ml-1">Vai trò phân quyền</label>
-                    <select value={newUser.role} onChange={e => setNewUser({...newUser, role: e.target.value})} className="w-full px-5 py-3.5 bg-[#F3EFE8] border-2 border-transparent rounded-2xl outline-none focus:bg-white focus:border-[#D4AF37] transition-all font-bold text-[#050A1F] appearance-none">
+                    <select value={newUser.role} onChange={e => setNewUser({ ...newUser, role: e.target.value })} className="w-full px-5 py-3.5 bg-[#F3EFE8] border-2 border-transparent rounded-2xl outline-none focus:bg-white focus:border-[#D4AF37] transition-all font-bold text-[#050A1F] appearance-none">
                       <option value="Admin">Admin (Quản trị viên)</option>
                       <option value="Nhân viên">Nhân viên / Waiter</option>
                       <option value="Bếp">Nhà bếp</option>
@@ -375,7 +372,7 @@ export default function AdminAccount() {
                   </div>
                 </form>
               </div>
-              
+
               <div className="p-8 pt-6 flex gap-4">
                 <button onClick={() => setShowAddModal(false)} className="flex-1 px-6 py-4 rounded-full font-bold text-gray-500 bg-gray-100 hover:bg-gray-200 transition-colors">Hủy</button>
                 <button form="add-user-form" type="submit" disabled={savingUser} className="flex-[2] px-6 py-4 rounded-full font-bold text-[#D4AF37] bg-[#050A1F] shadow-lg shadow-[#050A1F]/20 hover:shadow-xl hover:-translate-y-0.5 transition-all disabled:opacity-70">

@@ -9,7 +9,7 @@ function formatPrice(n) {
 
 export default function AdminMenu() {
   const { showToast } = useAuth()
-  
+
   const [view, setView] = useState('categories') // 'categories' or 'products'
   const [items, setItems] = useState([])
   const [categories, setCategories] = useState([])
@@ -99,7 +99,7 @@ export default function AdminMenu() {
   async function handleSaveProduct() {
     if (!prodForm.name || !prodForm.price) { showToast('Vui lòng nhập tên và giá', '⚠️'); return }
     const itemData = { ...prodForm, price: Number(String(prodForm.price).replace(/\D/g, '')) }
-    
+
     try {
       if (editProdItem) {
         await api.updateProduct(editProdItem.id, itemData)
@@ -197,7 +197,7 @@ export default function AdminMenu() {
   return (
     <AdminLayout title="Thực đơn">
       <div className="px-2 lg:px-8 py-6 w-full max-w-7xl mx-auto relative min-h-full">
-        
+
         {view === 'categories' ? (
           // ==============================
           // CATEGORIES VIEW
@@ -209,15 +209,15 @@ export default function AdminMenu() {
                 <p className="text-gray-500 mt-2 font-medium">Quản lý danh mục và các món ăn của nhà hàng</p>
               </div>
               <div className="flex gap-3">
-                <button 
-                  onClick={() => goToCategory('Tất cả')} 
+                <button
+                  onClick={() => goToCategory('Tất cả')}
                   className="bg-white text-[#050A1F] px-6 py-3.5 rounded-full font-bold shadow-sm border border-gray-200 hover:shadow-md transition-all flex items-center gap-2"
                 >
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
                   Tất cả các món
                 </button>
-                <button 
-                  onClick={openAddCategory} 
+                <button
+                  onClick={openAddCategory}
                   className="bg-[#050A1F] text-[#D4AF37] px-6 py-3.5 rounded-full font-bold shadow-lg shadow-[#050A1F]/20 hover:shadow-xl hover:-translate-y-0.5 transition-all flex items-center gap-2 group"
                 >
                   <div className="w-6 h-6 rounded-full bg-[#D4AF37]/20 flex items-center justify-center group-hover:rotate-90 transition-transform duration-300">
@@ -250,8 +250,8 @@ export default function AdminMenu() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {categories.map(cat => (
-                  <div 
-                    key={cat.id} 
+                  <div
+                    key={cat.id}
                     onClick={() => goToCategory(cat.name)}
                     className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group relative overflow-hidden flex flex-col cursor-pointer"
                   >
@@ -260,15 +260,15 @@ export default function AdminMenu() {
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
                       </div>
                       <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button 
-                          onClick={(e) => openEditCategory(cat, e)} 
+                        <button
+                          onClick={(e) => openEditCategory(cat, e)}
                           className="w-10 h-10 rounded-full bg-gray-50 text-blue-500 flex items-center justify-center hover:bg-blue-500 hover:text-white transition-colors relative"
                           title="Sửa"
                         >
                           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
                         </button>
-                        <button 
-                          onClick={(e) => handleDeleteCategory(cat.id, e)} 
+                        <button
+                          onClick={(e) => handleDeleteCategory(cat.id, e)}
                           className="w-10 h-10 rounded-full bg-gray-50 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-colors relative"
                           title="Xóa"
                         >
@@ -276,7 +276,7 @@ export default function AdminMenu() {
                         </button>
                       </div>
                     </div>
-                    
+
                     <h3 className="text-xl font-bold text-[#050A1F] mb-1 line-clamp-1">{cat.name}</h3>
                     <div className="mt-auto pt-4 flex items-center gap-3">
                       <div className="flex items-center gap-1.5 px-3 py-1 bg-[#F3EFE8] rounded-lg text-sm font-bold text-[#8B7355]">
@@ -285,7 +285,7 @@ export default function AdminMenu() {
                       </div>
                       <span className="text-xs font-semibold text-gray-400">ID: #{cat.id.substring(0, 4)}</span>
                     </div>
-                    
+
                     <div className="absolute bottom-0 left-0 h-1.5 bg-[#D4AF37] w-0 group-hover:w-full transition-all duration-300"></div>
                   </div>
                 ))}
@@ -299,7 +299,7 @@ export default function AdminMenu() {
           <div className="animate-in fade-in slide-in-from-right-4 duration-300">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
               <div>
-                <button 
+                <button
                   onClick={() => setView('categories')}
                   className="flex items-center gap-2 text-gray-500 hover:text-[#050A1F] font-bold mb-2 transition-colors"
                 >
@@ -310,8 +310,8 @@ export default function AdminMenu() {
                   {selectedCat === 'Tất cả' ? 'Tất cả các món' : selectedCat}
                 </h1>
               </div>
-              <button 
-                onClick={openAddProduct} 
+              <button
+                onClick={openAddProduct}
                 className="bg-[#050A1F] text-[#D4AF37] px-6 py-3.5 rounded-full font-bold shadow-lg shadow-[#050A1F]/20 hover:shadow-xl hover:-translate-y-0.5 transition-all flex items-center gap-2 group"
               >
                 <div className="w-6 h-6 rounded-full bg-[#D4AF37]/20 flex items-center justify-center group-hover:rotate-90 transition-transform duration-300">
@@ -324,24 +324,23 @@ export default function AdminMenu() {
             <div className="flex gap-3 mb-8 flex-wrap items-center">
               <div className="flex-1 min-w-[260px] max-w-sm relative">
                 <svg className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                <input 
-                  placeholder="Tìm kiếm món ăn..." 
-                  value={search} 
-                  onChange={e => setSearch(e.target.value)} 
+                <input
+                  placeholder="Tìm kiếm món ăn..."
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
                   className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 rounded-2xl outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition-all font-medium"
                 />
               </div>
-              
+
               <div className="flex gap-2 flex-wrap flex-1">
                 {['Tất cả', ...categories.map(c => c.name)].map(c => (
-                  <button 
-                    key={c} 
-                    onClick={() => setSelectedCat(c)} 
-                    className={`px-5 py-2.5 rounded-full font-bold text-sm transition-all ${
-                      selectedCat === c 
-                        ? 'bg-[#050A1F] text-[#D4AF37] shadow-md' 
+                  <button
+                    key={c}
+                    onClick={() => setSelectedCat(c)}
+                    className={`px-5 py-2.5 rounded-full font-bold text-sm transition-all ${selectedCat === c
+                        ? 'bg-[#050A1F] text-[#D4AF37] shadow-md'
                         : 'bg-white text-gray-500 border border-gray-200 hover:bg-gray-50'
-                    }`}
+                      }`}
                   >
                     {c}
                   </button>
@@ -381,12 +380,12 @@ export default function AdminMenu() {
                         <h3 className="font-bold text-lg text-[#050A1F] leading-tight line-clamp-1">{item.name}</h3>
                       </div>
                       <p className="text-sm text-gray-500 mb-4 line-clamp-2 h-10">{item.desc}</p>
-                      
+
                       <div className="flex items-end justify-between mb-5">
                         <div className="text-xl font-black text-red-600">{formatPrice(item.price)}</div>
                         <span className="text-xs font-bold text-[#8B7355] bg-[#F3EFE8] px-2 py-1 rounded-md">{item.category}</span>
                       </div>
-                      
+
                       <div className="flex gap-2 border-t border-gray-100 pt-4">
                         <button onClick={() => openEditProduct(item)} className="flex-1 bg-gray-50 hover:bg-gray-100 text-[#050A1F] font-bold py-2 rounded-xl transition-colors text-sm">
                           Sửa
@@ -448,7 +447,7 @@ export default function AdminMenu() {
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                 </button>
               </div>
-              
+
               <div className="px-6 sm:px-8 py-2 max-h-[60vh] overflow-y-auto no-scrollbar space-y-5">
                 <div className="flex gap-4 items-center">
                   <div className="w-20 h-20 rounded-2xl bg-[#F3EFE8] flex items-center justify-center text-3xl overflow-hidden shrink-0 border border-gray-100 shadow-inner">
@@ -465,9 +464,9 @@ export default function AdminMenu() {
                         Tải ảnh lên
                         <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
                       </label>
-                      <input 
-                        value={(!prodForm.icon?.startsWith('data:') && !prodForm.icon?.startsWith('http')) ? prodForm.icon : ''} 
-                        onChange={e => setProdForm(f => ({ ...f, icon: e.target.value }))} 
+                      <input
+                        value={(!prodForm.icon?.startsWith('data:') && !prodForm.icon?.startsWith('http')) ? prodForm.icon : ''}
+                        onChange={e => setProdForm(f => ({ ...f, icon: e.target.value }))}
                         className="w-16 text-center bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-[#D4AF37] font-medium"
                         placeholder="🍕"
                       />
@@ -503,7 +502,7 @@ export default function AdminMenu() {
                   <span className="font-bold text-gray-700">Món đang phục vụ (Có sẵn)</span>
                 </label>
               </div>
-              
+
               <div className="p-6 sm:p-8 pt-6 flex gap-3">
                 <button onClick={() => setShowProdModal(false)} className="flex-1 px-6 py-3.5 rounded-full font-bold text-gray-500 bg-gray-100 hover:bg-gray-200 transition-colors">Hủy bỏ</button>
                 <button onClick={handleSaveProduct} className="flex-[2] px-6 py-3.5 rounded-full font-bold text-[#D4AF37] bg-[#050A1F] shadow-lg shadow-[#050A1F]/20 hover:shadow-xl hover:-translate-y-0.5 transition-all">{editProdItem ? 'Cập nhật món' : 'Thêm món ăn'}</button>

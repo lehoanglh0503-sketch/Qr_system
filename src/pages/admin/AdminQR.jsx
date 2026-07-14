@@ -17,7 +17,7 @@ export default function AdminQR() {
     try {
       const data = await api.getTables()
       setTables(data)
-    } catch(err) {
+    } catch (err) {
       showToast('Lỗi tải danh sách bàn', '⚠️')
     } finally {
       setLoading(false)
@@ -32,7 +32,7 @@ export default function AdminQR() {
       showToast('Đã thêm bàn mới')
       setNewTableName('')
       loadTables()
-    } catch(err) {
+    } catch (err) {
       showToast('Lỗi khi thêm bàn', '⚠️')
     }
   }
@@ -43,7 +43,7 @@ export default function AdminQR() {
         await api.deleteTable(id)
         showToast('Đã xóa bàn')
         loadTables()
-      } catch(err) {
+      } catch (err) {
         showToast('Lỗi khi xóa bàn', '⚠️')
       }
     }
@@ -52,7 +52,7 @@ export default function AdminQR() {
   async function handleDownload(table) {
     const link = `${window.location.origin}/menu/quan-an-ngon?table=${encodeURIComponent(table.name)}`
     const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encodeURIComponent(link)}`
-    
+
     try {
       const response = await fetch(qrUrl)
       const blob = await response.blob()
@@ -95,14 +95,14 @@ export default function AdminQR() {
             <span className="text-[#0F172A]">Tables Layout</span>
           </div>
         </div>
-        
+
         {/* Add Table Form */}
         <form onSubmit={handleAddTable} className="flex items-center gap-3 bg-white p-2 rounded-xl shadow-sm border border-gray-100 max-w-sm w-full">
-          <input 
-            type="text" 
-            value={newTableName} 
-            onChange={e => setNewTableName(e.target.value)} 
-            placeholder="Tên bàn mới (vd: Bàn 15)" 
+          <input
+            type="text"
+            value={newTableName}
+            onChange={e => setNewTableName(e.target.value)}
+            placeholder="Tên bàn mới (vd: Bàn 15)"
             className="flex-1 px-4 py-2 bg-transparent outline-none text-[15px]"
           />
           <button type="submit" className="px-5 py-2.5 bg-[#050A1F] text-[#D4AF37] font-bold text-[14px] rounded-lg hover:bg-[#101835] transition-colors">
@@ -128,7 +128,7 @@ export default function AdminQR() {
                 <div className="mb-4">
                   <h3 className="font-serif text-[26px] font-bold text-[#0F172A]">{formattedName}</h3>
                 </div>
-                
+
                 <div className="bg-[#FAFAF9] border border-gray-100 rounded-2xl p-4 flex flex-col items-center mb-6">
                   <div className="bg-white p-3 rounded-2xl shadow-sm border border-gray-100 mb-4 hover:scale-105 transition-transform cursor-pointer" onClick={() => window.open(link, '_blank')} title="Mở trang đặt món">
                     <img src={qrUrl} alt={`QR Code ${table.name}`} className="w-40 h-40 object-contain" />
@@ -137,16 +137,16 @@ export default function AdminQR() {
                     Mở trang đặt món &rarr;
                   </a>
                 </div>
-                
+
                 <div className="flex gap-3 mt-auto">
-                  <button 
+                  <button
                     onClick={() => handleDownload(table)}
                     className="flex-1 py-3.5 bg-white border-2 border-gray-100 rounded-xl text-[14px] font-bold text-[#0F172A] hover:bg-gray-50 hover:border-gray-200 transition-colors flex justify-center items-center gap-2"
                   >
                     <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
                     In Thẻ Bàn
                   </button>
-                  <button 
+                  <button
                     onClick={() => handleDeleteTable(table.id)}
                     className="w-14 h-14 shrink-0 bg-[#fff1f2] text-[#ef4444] rounded-xl flex justify-center items-center hover:bg-[#fecdd3] transition-colors"
                     title="Xóa bàn này"

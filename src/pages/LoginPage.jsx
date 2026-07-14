@@ -10,14 +10,14 @@ export default function LoginPage() {
   const [error, setError] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [companyName, setCompanyName] = useState('')
-  
+
   const { login } = useAuth()
   const navigate = useNavigate()
 
   useEffect(() => {
     api.getCompanyInfo().then(res => {
       if (res?.name) setCompanyName(res.name)
-    }).catch(() => {})
+    }).catch(() => { })
   }, [])
 
   async function handleSubmit(e) {
@@ -44,7 +44,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-5 relative overflow-hidden" style={{ background: 'linear-gradient(160deg, #FDFBF7 0%, #F5F0E8 40%, #EDE5D8 100%)' }}>
-      
+
       <style>{`
         @keyframes float {
           0%, 100% { transform: translateY(0px); }
@@ -94,7 +94,7 @@ export default function LoginPage() {
 
       {/* Login Card */}
       <div className="login-card relative z-10 w-full max-w-[440px]">
-        
+
         {/* Logo */}
         <div className="text-center mb-10" style={{ animation: 'fadeIn 0.8s ease-out 0.2s both' }}>
           <div className="relative inline-block mb-6">
@@ -117,7 +117,7 @@ export default function LoginPage() {
         </div>
 
         {/* Form card */}
-        <div 
+        <div
           className="rounded-[2rem] p-8 sm:p-10 shadow-xl border border-white/60"
           style={{ background: 'rgba(255,255,255,0.75)', backdropFilter: 'blur(20px)', animation: 'fadeIn 0.8s ease-out 0.4s both' }}
         >
@@ -134,7 +134,7 @@ export default function LoginPage() {
                 <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#8B7355]">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
                 </div>
-                <input 
+                <input
                   id="name"
                   type="text"
                   value={name}
@@ -153,7 +153,7 @@ export default function LoginPage() {
                 <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#8B7355]">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
                 </div>
-                <input 
+                <input
                   id="password"
                   type={showPassword ? "text" : "password"}
                   value={password}
@@ -178,11 +178,11 @@ export default function LoginPage() {
             </div>
 
             <div className="pt-3">
-              <button 
+              <button
                 type="submit"
                 disabled={loading}
                 className="login-btn w-full py-4 rounded-2xl text-sm font-bold tracking-[0.15em] uppercase cursor-pointer transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-3"
-                style={{ 
+                style={{
                   background: '#050A1F',
                   color: '#D4AF37',
                   boxShadow: '0 6px 25px rgba(5, 10, 31, 0.2)'

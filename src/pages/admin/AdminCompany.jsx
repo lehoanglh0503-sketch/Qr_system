@@ -42,8 +42,8 @@ export default function AdminCompany() {
             <h1 className="text-3xl font-black text-[#050A1F] tracking-tight">Thông tin cửa hàng</h1>
             <p className="text-gray-500 mt-2 font-medium">Quản lý tên, địa chỉ và thời gian hoạt động của nhà hàng</p>
           </div>
-          <button 
-            onClick={handleSave} 
+          <button
+            onClick={handleSave}
             disabled={saving}
             className="bg-[#050A1F] text-[#D4AF37] px-8 py-3.5 rounded-full font-bold shadow-lg shadow-[#050A1F]/20 hover:shadow-xl hover:-translate-y-0.5 transition-all flex items-center gap-2 group disabled:opacity-70 disabled:cursor-not-allowed"
           >
@@ -86,53 +86,53 @@ export default function AdminCompany() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
               <div className="space-y-2">
                 <label className="text-sm font-bold text-gray-700 ml-1">Tên quán <span className="text-red-500">*</span></label>
-                <input 
-                  value={info.name} 
-                  onChange={e => setField('name', e.target.value)} 
-                  className="w-full px-5 py-4 bg-[#F3EFE8] border-2 border-transparent rounded-2xl outline-none focus:bg-white focus:border-[#D4AF37] transition-all font-bold text-[#050A1F] placeholder-gray-400" 
-                  placeholder="Nhập tên nhà hàng" 
+                <input
+                  value={info.name}
+                  onChange={e => setField('name', e.target.value)}
+                  className="w-full px-5 py-4 bg-[#F3EFE8] border-2 border-transparent rounded-2xl outline-none focus:bg-white focus:border-[#D4AF37] transition-all font-bold text-[#050A1F] placeholder-gray-400"
+                  placeholder="Nhập tên nhà hàng"
                 />
               </div>
 
               <div className="space-y-2">
                 <label className="text-sm font-bold text-gray-700 ml-1">Số điện thoại liên hệ <span className="text-red-500">*</span></label>
-                <input 
-                  value={info.phone} 
-                  onChange={e => setField('phone', e.target.value)} 
-                  className="w-full px-5 py-4 bg-[#F3EFE8] border-2 border-transparent rounded-2xl outline-none focus:bg-white focus:border-[#D4AF37] transition-all font-bold text-[#050A1F] placeholder-gray-400" 
-                  placeholder="0901234567" 
+                <input
+                  value={info.phone}
+                  onChange={e => setField('phone', e.target.value)}
+                  className="w-full px-5 py-4 bg-[#F3EFE8] border-2 border-transparent rounded-2xl outline-none focus:bg-white focus:border-[#D4AF37] transition-all font-bold text-[#050A1F] placeholder-gray-400"
+                  placeholder="0901234567"
                 />
               </div>
 
               <div className="space-y-2 md:col-span-2">
                 <label className="text-sm font-bold text-gray-700 ml-1">Địa chỉ chi tiết</label>
-                <input 
-                  value={info.address} 
-                  onChange={e => setField('address', e.target.value)} 
-                  className="w-full px-5 py-4 bg-[#F3EFE8] border-2 border-transparent rounded-2xl outline-none focus:bg-white focus:border-[#D4AF37] transition-all font-bold text-[#050A1F] placeholder-gray-400" 
-                  placeholder="Ví dụ: 123 Nguyễn Huệ, Quận 1, TP.HCM" 
+                <input
+                  value={info.address}
+                  onChange={e => setField('address', e.target.value)}
+                  className="w-full px-5 py-4 bg-[#F3EFE8] border-2 border-transparent rounded-2xl outline-none focus:bg-white focus:border-[#D4AF37] transition-all font-bold text-[#050A1F] placeholder-gray-400"
+                  placeholder="Ví dụ: 123 Nguyễn Huệ, Quận 1, TP.HCM"
                 />
               </div>
 
               <div className="space-y-2 md:col-span-2">
                 <label className="text-sm font-bold text-gray-700 ml-1">Mô tả quán</label>
-                <textarea 
-                  value={info.description} 
-                  onChange={e => setField('description', e.target.value)} 
-                  rows={4} 
-                  className="w-full px-5 py-4 bg-[#F3EFE8] border-2 border-transparent rounded-2xl outline-none focus:bg-white focus:border-[#D4AF37] transition-all font-medium text-[#050A1F] placeholder-gray-400 resize-none" 
-                  placeholder="Mô tả về nhà hàng, đặc sản, không gian..." 
+                <textarea
+                  value={info.description}
+                  onChange={e => setField('description', e.target.value)}
+                  rows={4}
+                  className="w-full px-5 py-4 bg-[#F3EFE8] border-2 border-transparent rounded-2xl outline-none focus:bg-white focus:border-[#D4AF37] transition-all font-medium text-[#050A1F] placeholder-gray-400 resize-none"
+                  placeholder="Mô tả về nhà hàng, đặc sản, không gian..."
                 />
               </div>
 
               <div className="space-y-2">
                 <label className="text-sm font-bold text-gray-700 ml-1">Giờ mở cửa</label>
                 <div className="relative">
-                  <input 
-                    type="time" 
-                    value={info.openTime} 
-                    onChange={e => setField('openTime', e.target.value)} 
-                    className="w-full px-5 py-4 bg-[#F3EFE8] border-2 border-transparent rounded-2xl outline-none focus:bg-white focus:border-[#D4AF37] transition-all font-bold text-[#050A1F]" 
+                  <input
+                    type="time"
+                    value={info.openTime}
+                    onChange={e => setField('openTime', e.target.value)}
+                    className="w-full px-5 py-4 bg-[#F3EFE8] border-2 border-transparent rounded-2xl outline-none focus:bg-white focus:border-[#D4AF37] transition-all font-bold text-[#050A1F]"
                   />
                 </div>
               </div>
@@ -140,11 +140,11 @@ export default function AdminCompany() {
               <div className="space-y-2">
                 <label className="text-sm font-bold text-gray-700 ml-1">Giờ đóng cửa</label>
                 <div className="relative">
-                  <input 
-                    type="time" 
-                    value={info.closeTime} 
-                    onChange={e => setField('closeTime', e.target.value)} 
-                    className="w-full px-5 py-4 bg-[#F3EFE8] border-2 border-transparent rounded-2xl outline-none focus:bg-white focus:border-[#D4AF37] transition-all font-bold text-[#050A1F]" 
+                  <input
+                    type="time"
+                    value={info.closeTime}
+                    onChange={e => setField('closeTime', e.target.value)}
+                    className="w-full px-5 py-4 bg-[#F3EFE8] border-2 border-transparent rounded-2xl outline-none focus:bg-white focus:border-[#D4AF37] transition-all font-bold text-[#050A1F]"
                   />
                 </div>
               </div>

@@ -10,7 +10,7 @@ export default function AdminOrders() {
   const [selectedTableName, setSelectedTableName] = useState(null)
   const [loading, setLoading] = useState(true)
   const [printingOrder, setPrintingOrder] = useState(null)
-  
+
   // Payment modal state
   const [showPaymentModal, setShowPaymentModal] = useState(false)
   const [paymentMethod, setPaymentMethod] = useState('cash')
@@ -64,7 +64,7 @@ export default function AdminOrders() {
       await api.updateOrderStatus(id, status)
       showToast('Đã cập nhật trạng thái đơn')
       loadOrders()
-    } catch(err) {
+    } catch (err) {
       showToast('Lỗi cập nhật', '⚠️')
     }
   }
@@ -73,7 +73,7 @@ export default function AdminOrders() {
     try {
       await api.updateOrderItemStatus(orderId, itemIndex, newStatus)
       loadOrders(false)
-    } catch(err) {
+    } catch (err) {
       showToast('Lỗi cập nhật món', '⚠️')
     }
   }
@@ -111,19 +111,19 @@ export default function AdminOrders() {
             <p style={{ margin: '5px 0 0 0', fontSize: '12px' }}>ĐC: 123 Đường ABC, Quận 1, TP.HCM</p>
             <p style={{ margin: '2px 0 0 0', fontSize: '12px' }}>SĐT: 0123 456 789</p>
           </div>
-          
+
           <h3 style={{ textAlign: 'center', margin: '10px 0', fontSize: '16px', fontWeight: 'bold', borderTop: '1px dashed #000', borderBottom: '1px dashed #000', padding: '5px 0' }}>
             HÓA ĐƠN THANH TOÁN
           </h3>
-          
+
           <div style={{ marginBottom: '10px', fontSize: '12px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Bàn:</span> <strong>{printingOrder.tableName}</strong></div>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Mã đơn:</span> <span>#{printingOrder.id?.substring(0, 6).toUpperCase()}</span></div>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Ngày:</span> <span>{new Date().toLocaleString('vi-VN')}</span></div>
           </div>
-          
+
           <div style={{ borderBottom: '1px dashed #000', margin: '10px 0' }}></div>
-          
+
           <table style={{ width: '100%', fontSize: '12px', textAlign: 'left', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ borderBottom: '1px solid #000' }}>
@@ -143,20 +143,20 @@ export default function AdminOrders() {
               ))}
             </tbody>
           </table>
-          
+
           <div style={{ borderBottom: '1px dashed #000', margin: '10px 0' }}></div>
-          
+
           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '16px', fontWeight: 'bold' }}>
             <span>TỔNG CỘNG:</span>
             <span>{Number(printingOrder.totalAmount).toLocaleString('vi-VN')} đ</span>
           </div>
-          
+
           {printingOrder.paymentMethod === 'qr' && (
             <div style={{ textAlign: 'center', marginTop: '20px' }}>
               <p style={{ margin: '0 0 5px 0', fontSize: '12px', fontWeight: 'bold' }}>Quét mã QR để thanh toán</p>
-              <img 
-                src={`https://img.vietqr.io/image/mb-0853272393-compact2.png?amount=${printingOrder.totalAmount}&addInfo=ThanhToan${printingOrder.id?.substring(0,6)}`} 
-                alt="QR Code MB Bank" 
+              <img
+                src={`https://img.vietqr.io/image/mb-0853272393-compact2.png?amount=${printingOrder.totalAmount}&addInfo=ThanhToan${printingOrder.id?.substring(0, 6)}`}
+                alt="QR Code MB Bank"
                 style={{ width: '150px', height: '150px', objectFit: 'contain' }}
               />
             </div>
@@ -173,7 +173,7 @@ export default function AdminOrders() {
       <div className="no-print print:hidden">
         <AdminLayout showHeader={true}>
           <div className="flex min-h-[calc(100vh-140px)] gap-6 font-sans">
-            
+
             {/* Left Panel: Tables Grid */}
             <div className="flex-1 flex flex-col h-full bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
               <div className="flex justify-between items-center px-6 py-5 border-b border-gray-100 bg-white z-10">
@@ -189,7 +189,7 @@ export default function AdminOrders() {
                   </div>
                 </div>
               </div>
-              
+
               <div className="flex-1 overflow-y-auto p-6 bg-gray-50/50">
                 {loading && tables.length === 0 ? (
                   <div className="flex justify-center items-center h-full">
@@ -202,13 +202,13 @@ export default function AdminOrders() {
                       const activeOrder = tableOrders.length > 0 ? tableOrders[0] : null;
                       const isSelected = selectedTableName === table.name;
                       const isOccupied = !!activeOrder;
-                      
+
                       return (
-                        <div 
+                        <div
                           key={table.id || idx}
                           onClick={() => setSelectedTableName(table.name)}
                           className={`relative flex flex-col justify-between cursor-pointer rounded-[20px] p-6 border transition-all duration-200 min-h-[140px]
-                            ${isOccupied 
+                            ${isOccupied
                               ? (isSelected ? 'border-[#ef4444] bg-[#fef2f2] shadow-md ring-4 ring-[#ef4444]/10 z-10 scale-[1.02]' : 'border-red-100 bg-[#fef2f2] hover:border-red-200 hover:shadow-md shadow-sm')
                               : (isSelected ? 'border-[#10b981] bg-white shadow-md ring-4 ring-[#10b981]/10 z-10 scale-[1.02]' : 'border-gray-100 bg-white hover:border-gray-300 hover:shadow-md shadow-sm')
                             }`}
@@ -217,7 +217,7 @@ export default function AdminOrders() {
                             <h3 className={`font-serif text-[20px] font-bold ${isSelected ? 'text-[#050A1F]' : 'text-[#0F172A]'}`}>{table.name}</h3>
                             <span className={`w-2.5 h-2.5 rounded-full shadow-sm mt-1.5 ${isOccupied ? 'bg-[#ef4444]' : 'bg-[#10b981]'}`}></span>
                           </div>
-                          
+
                           {isOccupied && (
                             <div className="flex justify-between items-end mt-auto pt-4">
                               <div className="flex items-center gap-1">
@@ -234,7 +234,7 @@ export default function AdminOrders() {
                 )}
               </div>
             </div>
-            
+
             {/* Right Panel: Receipt */}
             <div className="w-[380px] xl:w-[450px] h-full bg-white rounded-2xl shadow-md border border-gray-100 flex flex-col flex-shrink-0 relative">
               {selectedTableName ? (
@@ -251,7 +251,7 @@ export default function AdminOrders() {
                           <div className="text-sm font-medium text-[#D4AF37]">{selectedTableName}</div>
                         </div>
                       </div>
-                      
+
                       {selectedOrder && (
                         <span className="px-3 py-1 bg-red-50 text-[#ef4444] text-xs font-bold rounded-full uppercase tracking-wider border border-red-100">
                           {selectedOrder.status}
@@ -259,7 +259,7 @@ export default function AdminOrders() {
                       )}
                     </div>
                   </div>
-                  
+
                   {selectedOrder ? (
                     <>
                       {/* Receipt Items */}
@@ -277,7 +277,7 @@ export default function AdminOrders() {
                                   <div className="font-bold text-gray-900 mt-1">{Number(item.price * item.quantity).toLocaleString('vi-VN')}đ</div>
                                 </div>
                               </div>
-                              
+
                               {/* Item status / actions for cashier */}
                               <div className="mt-2 flex gap-2">
                                 {item.status === 'ready' && (
@@ -296,13 +296,13 @@ export default function AdminOrders() {
                                   </span>
                                 )}
                               </div>
-                              
+
                               <div className="w-full h-px border-b border-dashed border-gray-200 mt-4"></div>
                             </div>
                           ))}
                         </div>
                       </div>
-                      
+
                       {/* Receipt Summary */}
                       <div className="p-6 bg-white border-t border-gray-100 rounded-b-2xl shadow-[0_-10px_20px_-10px_rgba(0,0,0,0.05)]">
                         <div className="space-y-3 mb-6">
@@ -322,9 +322,9 @@ export default function AdminOrders() {
                             <span className="text-gray-600">Thuế VAT (8%):</span>
                             <span className="font-medium text-gray-900">{Number(selectedOrder.totalAmount * 0.08).toLocaleString('vi-VN')}đ</span>
                           </div>
-                          
+
                           <div className="h-px bg-gray-200 my-4"></div>
-                          
+
                           <div className="flex justify-between items-center">
                             <span className="text-base font-bold text-gray-900">Tổng thanh toán:</span>
                             <span className="text-2xl font-bold text-[#D4AF37]">
@@ -332,16 +332,16 @@ export default function AdminOrders() {
                             </span>
                           </div>
                         </div>
-                        
+
                         <div className="grid grid-cols-2 gap-3">
-                          <button 
+                          <button
                             onClick={() => handlePrintOnly(selectedOrder)}
                             className="py-3.5 px-4 rounded-xl border-2 border-gray-200 bg-[#f9fafb] text-gray-700 font-bold hover:bg-gray-100 hover:border-gray-300 transition-colors flex items-center justify-center gap-2"
                           >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
                             In Hóa Đơn
                           </button>
-                          <button 
+                          <button
                             onClick={() => handlePay(selectedOrder)}
                             className="py-3.5 px-4 rounded-xl bg-[#D4AF37] text-white font-bold hover:bg-[#b8952b] transition-colors shadow-lg shadow-[#D4AF37]/30 flex items-center justify-center gap-2"
                           >
@@ -382,7 +382,7 @@ export default function AdminOrders() {
                 </div>
               )}
             </div>
-            
+
             {/* Payment Modal */}
             {showPaymentModal && selectedOrder && (
               <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
@@ -393,7 +393,7 @@ export default function AdminOrders() {
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                     </button>
                   </div>
-                  
+
                   <div className="p-6">
                     <div className="mb-6">
                       <div className="text-4xl font-bold text-center text-[#ef4444] mb-2">
@@ -401,7 +401,7 @@ export default function AdminOrders() {
                       </div>
                       <div className="text-center text-gray-500 text-sm">Tổng tiền đã bao gồm VAT</div>
                     </div>
-                    
+
                     <h4 className="font-semibold text-gray-900 mb-3">Phương thức thanh toán</h4>
                     <div className="space-y-3 mb-6">
                       <label className={`flex items-center p-4 border rounded-xl cursor-pointer transition-all ${paymentMethod === 'cash' ? 'border-[#D4AF37] bg-[#fffbf2] shadow-sm' : 'border-gray-200 hover:border-gray-300'}`}>
@@ -417,22 +417,22 @@ export default function AdminOrders() {
                     </div>
 
                     <h4 className="font-semibold text-gray-900 mb-3">Ghi chú (Tùy chọn)</h4>
-                    <textarea 
+                    <textarea
                       value={orderNote}
                       onChange={e => setOrderNote(e.target.value)}
                       placeholder="Thêm ghi chú đơn hàng..."
                       className="w-full border border-gray-200 rounded-xl p-3 h-24 resize-none outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37]"
                     ></textarea>
                   </div>
-                  
+
                   <div className="p-6 bg-gray-50 border-t border-gray-100 flex gap-3">
-                    <button 
+                    <button
                       onClick={() => setShowPaymentModal(false)}
                       className="flex-1 py-3 px-4 bg-white border border-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition-colors"
                     >
                       Hủy bỏ
                     </button>
-                    <button 
+                    <button
                       onClick={() => confirmPayment(selectedOrder)}
                       className="flex-1 py-3 px-4 bg-[#D4AF37] text-white font-bold rounded-xl hover:bg-[#b8952b] transition-colors shadow-md shadow-[#D4AF37]/20"
                     >
@@ -442,7 +442,7 @@ export default function AdminOrders() {
                 </div>
               </div>
             )}
-            
+
           </div>
         </AdminLayout>
       </div>
